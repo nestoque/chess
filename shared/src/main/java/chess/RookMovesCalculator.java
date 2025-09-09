@@ -26,6 +26,8 @@ public class RookMovesCalculator {
                     } else if (board.getPiece(moveToPosition).getTeamColor() != myPiece.getTeamColor()) {
                         myMoveList.add(new ChessMove(myPosition, new ChessPosition(moveToRow, moveToCol), null));
                         break;
+                    } else {
+                        break;
                     }
 
                 } else {
