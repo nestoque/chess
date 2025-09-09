@@ -20,12 +20,12 @@ public class PawnMovesCalculator {
         ChessPiece myPiece = board.getPiece(myPosition);
         moveDirection = switch (myPiece.getTeamColor()) {
             case WHITE -> {
-                startRow = 1;
-                promotionRow = 7;
+                startRow = 2;
+                promotionRow = 8;
                 yield 1;
             }
             case BLACK -> {
-                startRow = 6;
+                startRow = 7;
                 promotionRow = 0;
                 yield 1;
             }

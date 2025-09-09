@@ -5,7 +5,7 @@ import java.util.Collection;
 
 public class KingMovesCalculator {
 
-    private static int[][] KingMoveOptionsArray = {{1, -1}, {1, 0}, {1, 1}, {0, -1}, {0, 1}, {-1, -1}, {-1, 0}, {-1, 1}};
+    private static final int[][] KingMoveOptionsArray = {{1, -1}, {1, 0}, {1, 1}, {0, -1}, {0, 1}, {-1, -1}, {-1, 0}, {-1, 1}};
 
 
     public static Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
@@ -17,7 +17,7 @@ public class KingMovesCalculator {
         for (int[] movePair : KingMoveOptionsArray) {
             moveToRow = thisRow + movePair[0];
             moveToCol = thisCol + movePair[1];
-            if ((8 > moveToRow) && (moveToRow >= 0) && (8 > moveToCol) && (moveToCol >= 0)) {
+            if ((8 >= moveToRow) && (moveToRow > 0) && (8 >= moveToCol) && (moveToCol > 0)) {
                 ChessPosition moveToPosition = new ChessPosition(moveToRow, moveToCol);
                 if (board.getPiece(moveToPosition).getTeamColor() != myPiece.getTeamColor()) {
                     myMoveList.add(new ChessMove(myPosition, new ChessPosition(moveToRow, moveToCol), null));

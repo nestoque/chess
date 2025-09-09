@@ -19,7 +19,7 @@ public class QueenMovesCalculator {
             while (true) {
                 moveToRow += movePair[0];
                 moveToCol += movePair[1];
-                if ((8 > moveToRow) && (moveToRow >= 0) && (8 > moveToCol) && (moveToCol >= 0)) {
+                if ((8 >= moveToRow) && (moveToRow > 0) && (8 >= moveToCol) && (moveToCol > 0)) {
                     ChessPosition moveToPosition = new ChessPosition(moveToRow, moveToCol);
                     if (board.getPiece(moveToPosition).getTeamColor() != myPiece.getTeamColor()) {
                         myMoveList.add(new ChessMove(myPosition, new ChessPosition(moveToRow, moveToCol), null));
