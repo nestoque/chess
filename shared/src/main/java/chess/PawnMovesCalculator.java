@@ -27,7 +27,7 @@ public class PawnMovesCalculator {
             case BLACK -> {
                 startRow = 7;
                 promotionRow = 0;
-                yield 1;
+                yield -1;
             }
         };
 
@@ -52,7 +52,7 @@ public class PawnMovesCalculator {
         //Attack
         chess.ChessPosition attackLeft = new ChessPosition(movedRow, thisCol - 1);
         chess.ChessPosition attackRight = new ChessPosition(movedRow, thisCol + 1);
-        if (board.getPiece(attackLeft) == null) {
+        if (board.getPiece(attackLeft) != null && board.getPiece(attackLeft).getTeamColor() != myPiece.getTeamColor()) {
             if (movedRow == promotionRow) {
                 for (PieceType promotionPiece : promotionPieces) {
                     myMoveList.add(new ChessMove(myPosition, attackLeft, promotionPiece));
@@ -60,7 +60,7 @@ public class PawnMovesCalculator {
             }
             myMoveList.add(new ChessMove(myPosition, attackLeft, null));
         }
-        if (board.getPiece(attackRight) == null) {
+        if (board.getPiece(attackRight) != null && board.getPiece(attackLeft).getTeamColor() != myPiece.getTeamColor()) {
             if (movedRow == promotionRow) {
                 for (PieceType promotionPiece : promotionPieces) {
                     myMoveList.add(new ChessMove(myPosition, attackRight, promotionPiece));
