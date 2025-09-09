@@ -39,8 +39,35 @@ public class PawnMovesCalculator {
             }
         }
         //Normal Walk
-
+        int movedRow = thisRow + moveDirection;
+        chess.ChessPosition doubleJumpPosition = new ChessPosition(movedRow, thisCol);
+        if (board.getPiece(doubleJumpPosition) == null) {
+            if (movedRow == promotionRow) {
+                for (PieceType promotionPiece : promotionPieces) {
+                    myMoveList.add(new ChessMove(myPosition, doubleJumpPosition, promotionPiece));
+                }
+            }
+            myMoveList.add(new ChessMove(myPosition, doubleJumpPosition, null));
+        }
         //Attack
+        chess.ChessPosition attackLeft = new ChessPosition(movedRow, thisCol - 1);
+        chess.ChessPosition attackRight = new ChessPosition(movedRow, thisCol + 1);
+        if (board.getPiece(attackLeft) == null) {
+            if (movedRow == promotionRow) {
+                for (PieceType promotionPiece : promotionPieces) {
+                    myMoveList.add(new ChessMove(myPosition, attackLeft, promotionPiece));
+                }
+            }
+            myMoveList.add(new ChessMove(myPosition, attackLeft, null));
+        }
+        if (board.getPiece(attackRight) == null) {
+            if (movedRow == promotionRow) {
+                for (PieceType promotionPiece : promotionPieces) {
+                    myMoveList.add(new ChessMove(myPosition, attackRight, promotionPiece));
+                }
+            }
+            myMoveList.add(new ChessMove(myPosition, attackRight, null));
+        }
 
         return myMoveList;
     }
