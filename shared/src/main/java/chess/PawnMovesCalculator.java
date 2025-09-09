@@ -26,48 +26,61 @@ public class PawnMovesCalculator {
             }
             case BLACK -> {
                 startRow = 7;
-                promotionRow = 0;
                 yield -1;
             }
         };
 
-        //Double Jump
-        if (thisRow == startRow) {
-            chess.ChessPosition doubleJumpPosition = new ChessPosition(thisRow + 2 * moveDirection, thisCol);
-            if (board.getPiece(doubleJumpPosition) == null) {
-                myMoveList.add(new ChessMove(myPosition, doubleJumpPosition, null));
-            }
-        }
+
         //Normal Walk
         int movedRow = thisRow + moveDirection;
-        chess.ChessPosition doubleJumpPosition = new ChessPosition(movedRow, thisCol);
-        if (board.getPiece(doubleJumpPosition) == null) {
+        chess.ChessPosition movedRowPosition = new ChessPosition(movedRow, thisCol);
+        if (board.getPiece(movedRowPosition) == null) {
             if (movedRow == promotionRow) {
                 for (PieceType promotionPiece : promotionPieces) {
-                    myMoveList.add(new ChessMove(myPosition, doubleJumpPosition, promotionPiece));
+                    myMoveList.add(new ChessMove(myPosition, movedRowPosition, promotionPiece));
+                }
+            } else {
+                myMoveList.add(new ChessMove(myPosition, movedRowPosition, null));
+                
+                //Double Jump
+                if (thisRow == startRow) {
+                    chess.ChessPosition doubleJumpPosition = new ChessPosition(thisRow + 2 * moveDirection, thisCol);
+                    if (board.getPiece(doubleJumpPosition) == null) {
+                        myMoveList.add(new ChessMove(myPosition, doubleJumpPosition, null));
+                    }
                 }
             }
-            myMoveList.add(new ChessMove(myPosition, doubleJumpPosition, null));
+
         }
         //Attack
-        chess.ChessPosition attackLeft = new ChessPosition(movedRow, thisCol - 1);
-        chess.ChessPosition attackRight = new ChessPosition(movedRow, thisCol + 1);
-        if (board.getPiece(attackLeft) != null && board.getPiece(attackLeft).getTeamColor() != myPiece.getTeamColor()) {
-            if (movedRow == promotionRow) {
-                for (PieceType promotionPiece : promotionPieces) {
-                    myMoveList.add(new ChessMove(myPosition, attackLeft, promotionPiece));
+        if (thisCol - 1 > 0) {
+            chess.ChessPosition attackLeft = new ChessPosition(movedRow, thisCol - 1);
+            if (board.getPiece(attackLeft) != null && board.getPiece(attackLeft).getTeamColor() != myPiece.getTeamColor()) {
+                if (movedRow == promotionRow) {
+                    for (PieceType promotionPiece : promotionPieces) {
+                        myMoveList.add(new ChessMove(myPosition, attackLeft, promotionPiece));
+                    }
+                } else {
+                    myMoveList.add(new ChessMove(myPosition, attackLeft, null));
                 }
+
             }
-            myMoveList.add(new ChessMove(myPosition, attackLeft, null));
         }
-        if (board.getPiece(attackRight) != null && board.getPiece(attackLeft).getTeamColor() != myPiece.getTeamColor()) {
-            if (movedRow == promotionRow) {
-                for (PieceType promotionPiece : promotionPieces) {
-                    myMoveList.add(new ChessMove(myPosition, attackRight, promotionPiece));
+
+        if (thisCol + 1 <= 8) {
+            chess.ChessPosition attackRight = new ChessPosition(movedRow, thisCol + 1);
+            if (board.getPiece(attackRight) != null && board.getPiece(attackRight).getTeamColor() != myPiece.getTeamColor()) {
+                if (movedRow == promotionRow) {
+                    for (PieceType promotionPiece : promotionPieces) {
+                        myMoveList.add(new ChessMove(myPosition, attackRight, promotionPiece));
+                    }
+                } else {
+                    myMoveList.add(new ChessMove(myPosition, attackRight, null));
                 }
+
             }
-            myMoveList.add(new ChessMove(myPosition, attackRight, null));
         }
+
 
         return myMoveList;
     }
