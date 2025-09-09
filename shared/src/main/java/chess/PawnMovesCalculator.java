@@ -26,6 +26,7 @@ public class PawnMovesCalculator {
             }
             case BLACK -> {
                 startRow = 7;
+                promotionRow = 1;
                 yield -1;
             }
         };
@@ -41,7 +42,7 @@ public class PawnMovesCalculator {
                 }
             } else {
                 myMoveList.add(new ChessMove(myPosition, movedRowPosition, null));
-                
+
                 //Double Jump
                 if (thisRow == startRow) {
                     chess.ChessPosition doubleJumpPosition = new ChessPosition(thisRow + 2 * moveDirection, thisCol);
