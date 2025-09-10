@@ -37,7 +37,7 @@ public class PawnMovesCalculator {
         chess.ChessPosition movedRowPosition = new ChessPosition(movedRow, thisCol);
         if (board.getPiece(movedRowPosition) == null) {
             if (movedRow == promotionRow) {
-                for (PieceType promotionPiece : promotionPieces) {
+                for (PieceType promotionPiece : PROMOTION_PIECES) {
                     myMoveList.add(new ChessMove(myPosition, movedRowPosition, promotionPiece));
                 }
             } else {
@@ -58,7 +58,7 @@ public class PawnMovesCalculator {
             chess.ChessPosition attackLeft = new ChessPosition(movedRow, thisCol - 1);
             if (board.getPiece(attackLeft) != null && board.getPiece(attackLeft).getTeamColor() != myPiece.getTeamColor()) {
                 if (movedRow == promotionRow) {
-                    for (PieceType promotionPiece : promotionPieces) {
+                    for (PieceType promotionPiece : PROMOTION_PIECES) {
                         myMoveList.add(new ChessMove(myPosition, attackLeft, promotionPiece));
                     }
                 } else {
@@ -72,7 +72,7 @@ public class PawnMovesCalculator {
             chess.ChessPosition attackRight = new ChessPosition(movedRow, thisCol + 1);
             if (board.getPiece(attackRight) != null && board.getPiece(attackRight).getTeamColor() != myPiece.getTeamColor()) {
                 if (movedRow == promotionRow) {
-                    for (PieceType promotionPiece : promotionPieces) {
+                    for (PieceType promotionPiece : PROMOTION_PIECES) {
                         myMoveList.add(new ChessMove(myPosition, attackRight, promotionPiece));
                     }
                 } else {
