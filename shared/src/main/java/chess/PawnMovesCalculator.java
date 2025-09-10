@@ -8,7 +8,7 @@ import static chess.ChessPiece.PieceType.*;
 
 public class PawnMovesCalculator {
 
-    private static ChessPiece.PieceType[] promotionPieces = {KNIGHT, BISHOP, ROOK, QUEEN};
+    private static final ChessPiece.PieceType[] PROMOTION_PIECES = {KNIGHT, BISHOP, ROOK, QUEEN};
 
     public static Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         Collection<ChessMove> myMoveList = new ArrayList<>();
