@@ -10,15 +10,20 @@ import java.util.Collection;
  */
 public class ChessGame {
 
-    public ChessGame() {
+    ChessBoard gameBoard;
+    TeamColor teamTurn;
 
+    public ChessGame() {
+        teamTurn = TeamColor.WHITE;
+        gameBoard = new ChessBoard();
+        gameBoard.resetBoard();
     }
 
     /**
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        throw new RuntimeException("Not implemented");
+        return teamTurn;
     }
 
     /**
@@ -27,7 +32,7 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        throw new RuntimeException("Not implemented");
+        teamTurn = team;
     }
 
     /**
@@ -46,18 +51,43 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece myPiece = gameBoard.getPiece(startPosition);
+        if (myPiece == null) {
+            return null;
+        } else {
+            return myPiece.pieceMoves(gameBoard, startPosition);
+        }
     }
 
     /**
      * Makes a move in a chess game
+     * if legal
      *
      * @param move chess move to perform
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        TeamColor thisTeam = getTeamTurn();
+        ChessBoard tempBoard;
+        if (validMoves(move.getStartPosition()).contains(move)) {
+            if (isInCheck(thisTeam)) {
+                tempBoard = makeLegalMove(move);
+
+            } else {
+                //otherwise just execute if in validmoves
+
+                switch (thisTeam) {
+                    case WHITE -> setTeamTurn(TeamColor.BLACK);
+                    case BLACK -> setTeamTurn(TeamColor.WHITE);
+                }
+                gameBoard = makeLegalMove(move);
+
+            }
+            return;
+        }
+        throw new InvalidMoveException("Invalid Move");
     }
+
 
     /**
      * Determines if the given team is in check
@@ -66,8 +96,12 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
+        //find king
+        //is threatened
+        //return ChessSquareThreatenedCalculator.isThreatened(gameBoard, teamColor, kingPosition)
         throw new RuntimeException("Not implemented");
     }
+
 
     /**
      * Determines if the given team is in checkmate
@@ -76,7 +110,8 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+
+        //threatened each square around and this square
     }
 
     /**
@@ -87,7 +122,14 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+
+        /* threaten each square around and not isincheck//not this square
+         *
+         * OR
+         *
+         * no valid moves
+         *
+         * */
     }
 
     /**
@@ -96,7 +138,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        throw new RuntimeException("Not implemented");
+        gameBoard = board;
     }
 
     /**
@@ -105,6 +147,39 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return gameBoard;
+    }
+
+    /**
+     * makes the move and changes turns
+     * in a chess game
+     *
+     * @param move the move to execute
+     */
+    public ChessBoard makeLegalMove(ChessMove move) {
+        ChessBoard newBoard = gameBoard;
+        ChessPosition myStartPosition = move.getStartPosition();
+        ChessPiece myPiece = newBoard.getPiece(myStartPosition);
+        newBoard.removePiece(myStartPosition);
+        newBoard.addPiece(move.getEndPosition(), myPiece);
+        return newBoard;
     }
 }
+
+
+/* team var can castle, bool llowers if rook has moved, maybe even per sid
+ * team var, king location?
+ *
+ * Ischeck, calls isthreatened
+ * isthreatened??? loop  directions until meet piece, if other team and can move that direction say yet
+ * stalemate, king not in check, but every surrounding place either ischeck or piece occupied
+ * maybe make a valid moves function? but then need like linked list to all pieces
+ *
+ * for en passant, maybe a last game state is saved? use get board, setboard
+ *
+ * for move, update the gameboard
+ *
+ *
+ * en passant, just adding to calculator, if last game state shows them jumping, and you can attack an empty diagonal
+ *  */
+

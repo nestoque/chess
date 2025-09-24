@@ -54,31 +54,19 @@ public class PawnMovesCalculator {
 
         }
         //Attack
-        if (thisCol - 1 > 0) {
-            chess.ChessPosition attackLeft = new ChessPosition(movedRow, thisCol - 1);
-            if (board.getPiece(attackLeft) != null && board.getPiece(attackLeft).getTeamColor() != myPiece.getTeamColor()) {
-                if (movedRow == promotionRow) {
-                    for (PieceType promotionPiece : PROMOTION_PIECES) {
-                        myMoveList.add(new ChessMove(myPosition, attackLeft, promotionPiece));
+        for (int attackCol : new int[]{thisCol + 1, thisCol - 1}) {
+            if (attackCol > 0 && attackCol <= 8) {
+                chess.ChessPosition attackDiag = new ChessPosition(movedRow, attackCol);
+                if (board.getPiece(attackDiag) != null && board.getPiece(attackDiag).getTeamColor() != myPiece.getTeamColor()) {
+                    if (movedRow == promotionRow) {
+                        for (PieceType promotionPiece : PROMOTION_PIECES) {
+                            myMoveList.add(new ChessMove(myPosition, attackDiag, promotionPiece));
+                        }
+                    } else {
+                        myMoveList.add(new ChessMove(myPosition, attackDiag, null));
                     }
-                } else {
-                    myMoveList.add(new ChessMove(myPosition, attackLeft, null));
+
                 }
-
-            }
-        }
-
-        if (thisCol + 1 <= 8) {
-            chess.ChessPosition attackRight = new ChessPosition(movedRow, thisCol + 1);
-            if (board.getPiece(attackRight) != null && board.getPiece(attackRight).getTeamColor() != myPiece.getTeamColor()) {
-                if (movedRow == promotionRow) {
-                    for (PieceType promotionPiece : PROMOTION_PIECES) {
-                        myMoveList.add(new ChessMove(myPosition, attackRight, promotionPiece));
-                    }
-                } else {
-                    myMoveList.add(new ChessMove(myPosition, attackRight, null));
-                }
-
             }
         }
 
