@@ -94,27 +94,15 @@ public class ChessSquareThreatenedCalculator {
         int thisCol = position.getColumn();
         int startRow;
         int startCol;
-        int currentDistance;
         for (int[] movePair : KNIGHT_THREATENING_MOVES) {
-            startRow = thisRow;
-            startCol = thisCol;
-            currentDistance = 0;
-            while (true) {
-                currentDistance += 1;
-                startRow += movePair[0];
-                startCol += movePair[1];
-                if ((8 >= startRow) && (startRow > 0) && (8 >= startCol) && (startCol > 0)) {
-                    ChessPosition moveToPosition = new ChessPosition(startRow, startCol);
-                    ChessPiece moveToPiece = board.getPiece((moveToPosition));
-                    ChessPiece.PieceType movetoPieceType = moveToPiece.getPieceType();
-                    if (moveToPiece != null && moveToPiece.getTeamColor() != teamColor && movetoPieceType == ChessPiece.PieceType.KNIGHT) {
-                        return true;
-                    } else {
-                        break;
-                    }
-
-                } else {
-                    break;
+            startRow = thisRow + movePair[0];
+            startCol = thisCol + movePair[1];
+            if ((8 >= startRow) && (startRow > 0) && (8 >= startCol) && (startCol > 0)) {
+                ChessPosition moveToPosition = new ChessPosition(startRow, startCol);
+                ChessPiece moveToPiece = board.getPiece((moveToPosition));
+                ChessPiece.PieceType movetoPieceType = moveToPiece.getPieceType();
+                if (moveToPiece != null && moveToPiece.getTeamColor() != teamColor && movetoPieceType == ChessPiece.PieceType.KNIGHT) {
+                    return true;
                 }
             }
         }
@@ -122,6 +110,8 @@ public class ChessSquareThreatenedCalculator {
     }
 
     public static boolean checkThreateningPawn(ChessBoard board, ChessGame.TeamColor teamColor) {
+
+
         return false;
     }
 
