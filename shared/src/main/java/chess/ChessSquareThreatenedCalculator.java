@@ -109,7 +109,33 @@ public class ChessSquareThreatenedCalculator {
         return false;
     }
 
-    public static boolean checkThreateningPawn(ChessBoard board, ChessGame.TeamColor teamColor) {
+    public static boolean checkThreateningPawn(ChessBoard board, ChessGame.TeamColor teamColor,
+                                               ChessPosition position) {
+
+        int thisCol = position.getColumn();
+        ChessPiece myPiece = board.getPiece(position);
+        int threatRow = switch (teamColor) {
+            case WHITE -> {
+                yield position.getRow() + 1;
+            }
+            case BLACK -> {
+                yield position.getRow() - 1;
+            }
+        };
+
+        //Attack
+        for (int attackCol : new int[]{thisCol + 1, thisCol - 1}) {
+            if (attackCol > 0 && attackCol <= 8) {
+                chess.ChessPosition attackDiag = new ChessPosition(threatRow, attackCol);
+                ChessPiece moveToPiece = board.getPiece(attackDiag);
+                if (moveToPiece != null
+                        && moveToPiece.getTeamColor() != myPiece.getTeamColor()
+                        && moveToPiece.getPieceType() == ChessPiece.PieceType.PAWN) {
+                    return true;
+
+                }
+            }
+        }
 
 
         return false;
