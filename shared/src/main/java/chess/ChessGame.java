@@ -2,6 +2,8 @@ package chess;
 
 import java.util.Collection;
 
+import chess.ChessSquareThreatenedCalculator;
+
 /**
  * For a class that can manage a chess game, making moves on a board
  * <p>
@@ -88,6 +90,27 @@ public class ChessGame {
         throw new InvalidMoveException("Invalid Move");
     }
 
+    /**
+     * finds the ChessPosition of the King
+     *
+     * @param teamColor which team's King to find
+     * @return True if the specified team is in check
+     */
+    public ChessPosition findKing(TeamColor teamColor) {
+        //find king
+        for (int currentCol = 1; currentCol <= 8; currentCol++) {
+            for (int currentRow = 0; currentRow <= 8; currentRow++) {
+                ChessPosition squareChecked = new ChessPosition(currentRow, currentCol);
+                ChessPiece suspectKing = gameBoard.getPiece(squareChecked);
+                if (suspectKing.getPieceType() == ChessPiece.PieceType.KING
+                        && suspectKing.getTeamColor() == teamColor) {
+                    return squareChecked;
+                }
+            }
+        }
+        throw new RuntimeException("No King Fund");
+    }
+
 
     /**
      * Determines if the given team is in check
@@ -96,10 +119,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        //find king
-        //is threatened
-        //return ChessSquareThreatenedCalculator.isThreatened(gameBoard, teamColor, kingPosition)
-        throw new RuntimeException("Not implemented");
+        return ChessSquareThreatenedCalculator.isThreatened(gameBoard, teamColor, findKing(teamColor));
     }
 
 
@@ -110,8 +130,11 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-
+        //find king
+        ChessPosition kingPosition = findKing(teamColor);
         //threatened each square around and this square
+        return ChessSquareThreatenedCalculator.isThreatened(gameBoard, teamColor, kingPosition)
+                && ChessSquareThreatenedCalculator.surroundingSquaresThreatened(gameBoard, teamColor, kingPosition);
     }
 
     /**
@@ -122,14 +145,11 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-
-        /* threaten each square around and not isincheck//not this square
-         *
-         * OR
-         *
-         * no valid moves
-         *
-         * */
+        //find king
+        ChessPosition kingPosition = findKing(teamColor);
+        //threatened each square around and this square
+        return ChessSquareThreatenedCalculator.isThreatened(gameBoard, teamColor, kingPosition)
+                && ChessSquareThreatenedCalculator.surroundingSquaresThreatened(gameBoard, teamColor, kingPosition);
     }
 
     /**

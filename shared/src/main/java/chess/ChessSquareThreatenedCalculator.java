@@ -6,6 +6,7 @@ public class ChessSquareThreatenedCalculator {
 
     private static final int[][] DIRECT_DIRECTIONS = {{1, 0}, {0, -1}, {0, 1}, {-1, 0}};
     private static final int[][] DIAGONAL_DIRECTIONS = {{1, -1}, {1, 1}, {-1, -1}, {-1, 1}};
+    private static final int[][] SURROUNDING_OFFSETS = {{1, 0}, {0, -1}, {0, 1}, {-1, 0}, {1, -1}, {1, 1}, {-1, -1}, {-1, 1}};
     private static final int[][] KNIGHT_THREATENING_MOVES = {{2, -1}, {2, 1}, {1, 2}, {-1, 2}, {-2, 1}, {-2, -1}, {-1, -2}, {1, -2}};
     private static final Set<ChessPiece.PieceType> DIAGONAL_TAKERS =
             Set.of(ChessPiece.PieceType.QUEEN, ChessPiece.PieceType.BISHOP);
@@ -30,21 +31,30 @@ public class ChessSquareThreatenedCalculator {
         ChessPiece myPiece = board.getPiece(position);
         if (checkThreatenDirection(board, teamColor, position, DIAGONAL_DIRECTIONS, DIAGONAL_TAKERS)
                 || checkThreatenDirection(board, teamColor, position, DIRECT_DIRECTIONS, DIRECT_TAKERS)
-                || checkThreateningKnights(board, teamColor, position, DIAGONAL_DIRECTIONS, DIAGONAL_TAKERS)
-                || checkThreateningPawn(board, teamColor, position))
-
-
-        //Pawn only corners
-
-
-        //Knight finite
-
-        {
-            if (true) {
-                return true;
-            }
+                || checkThreateningKnights(board, teamColor, position)
+                || checkThreateningPawn(board, teamColor, position)) {
+            return true;
         }
         return false;
+    }
+
+    /**
+     * Determines if the given team is in checkmate
+     *
+     * @param teamColor which team to check for checkmate
+     * @return True if the specified team is in checkmate
+     */
+    public static boolean surroundingSquaresThreatened(ChessBoard board, ChessGame.TeamColor teamColor, ChessPosition position) {
+        //find king
+        int thisRow = position.getRow();
+        int thisCol = position.getColumn();
+        for (int[] offset : SURROUNDING_OFFSETS) {
+            ChessPosition offsetPosition = new ChessPosition(thisRow + offset[0], thisCol + offset[1]);
+            if (!isThreatened(board, teamColor, position)) {
+                return false;
+            }
+        }
+        return true;
     }
 
 
