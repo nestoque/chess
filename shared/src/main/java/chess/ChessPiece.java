@@ -15,7 +15,7 @@ public class ChessPiece {
     private final ChessGame.TeamColor pieceColor;
     private final PieceType type;
 
-    public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+    public ChessPiece(ChessGame.TeamColor pieceColor, PieceType type) {
         this.pieceColor = pieceColor;
         this.type = type;
     }
@@ -70,5 +70,25 @@ public class ChessPiece {
     @Override
     public int hashCode() {
         return Objects.hash(pieceColor, type);
+    }
+
+
+    @Override
+    public String toString() {
+        String pieceString = "";
+        char pieceLetter = switch (getPieceType()) {
+            case KING -> 'K';
+            case QUEEN -> 'Q';
+            case BISHOP -> 'B';
+            case KNIGHT -> 'N';
+            case ROOK -> 'R';
+            case PAWN -> 'P';
+        };
+        pieceString += pieceLetter;
+        if (getTeamColor() == ChessGame.TeamColor.BLACK) {
+            return pieceString.toLowerCase();
+        } else {
+            return pieceString;
+        }
     }
 }

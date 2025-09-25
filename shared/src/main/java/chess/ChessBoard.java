@@ -93,4 +93,22 @@ public class ChessBoard {
     public int hashCode() {
         return Arrays.deepHashCode(squares);
     }
+
+
+    @Override
+    public String toString() {
+        StringBuilder boardString = new StringBuilder();
+        for (int thisRow = 0; thisRow < 8; thisRow++) {
+            boardString.append("\n|");
+            for (int thisCol = 0; thisCol < 8; thisCol++) {
+                if (squares[thisRow][thisCol] == null) {
+                    boardString.append(" |");
+                } else {
+                    boardString.append(squares[thisRow][thisCol].toString()).append("|");
+                }
+
+            }
+        }
+        return boardString.toString();
+    }
 }

@@ -76,19 +76,19 @@ public class ChessSquareThreatenedCalculator {
                 startRow += movePair[0];
                 startCol += movePair[1];
                 if ((8 >= startRow) && (startRow > 0) && (8 >= startCol) && (startCol > 0)) {
-                    ChessPosition moveToPosition = new ChessPosition(startRow, startCol);
-                    ChessPiece moveToPiece = board.getPiece((moveToPosition));
-                    ChessPiece.PieceType movetoPieceType = moveToPiece.getPieceType();
-                    if (moveToPiece != null && moveToPiece.getTeamColor() != teamColor) {
-                        if (threateningPieces.contains(movetoPieceType)) {
-                            return true;
-                        } else if (currentDistance == 1 && movetoPieceType == ChessPiece.PieceType.KING) {
-                            return true;
+                    ChessPosition moveFromPosition = new ChessPosition(startRow, startCol);
+                    ChessPiece attackingPiece = board.getPiece((moveFromPosition));
+                    if (attackingPiece != null) {
+                        ChessPiece.PieceType movetoPieceType = attackingPiece.getPieceType();
+                        if (attackingPiece.getTeamColor() != teamColor) {
+                            if (threateningPieces.contains(movetoPieceType)) {
+                                return true;
+                            } else if (currentDistance == 1 && movetoPieceType == ChessPiece.PieceType.KING) {
+                                return true;
+                            }
                         }
-                    } else {
-                        break;
                     }
-
+                    break;
                 } else {
                     break;
                 }
@@ -110,9 +110,11 @@ public class ChessSquareThreatenedCalculator {
             if ((8 >= startRow) && (startRow > 0) && (8 >= startCol) && (startCol > 0)) {
                 ChessPosition moveToPosition = new ChessPosition(startRow, startCol);
                 ChessPiece moveToPiece = board.getPiece((moveToPosition));
-                ChessPiece.PieceType movetoPieceType = moveToPiece.getPieceType();
-                if (moveToPiece != null && moveToPiece.getTeamColor() != teamColor && movetoPieceType == ChessPiece.PieceType.KNIGHT) {
-                    return true;
+                if (moveToPiece != null) {
+                    ChessPiece.PieceType movetoPieceType = moveToPiece.getPieceType();
+                    if (moveToPiece.getTeamColor() != teamColor && movetoPieceType == ChessPiece.PieceType.KNIGHT) {
+                        return true;
+                    }
                 }
             }
         }
@@ -133,22 +135,49 @@ public class ChessSquareThreatenedCalculator {
             }
         };
 
-        //Attack
-        for (int attackCol : new int[]{thisCol + 1, thisCol - 1}) {
-            if (attackCol > 0 && attackCol <= 8) {
-                chess.ChessPosition attackDiag = new ChessPosition(threatRow, attackCol);
-                ChessPiece moveToPiece = board.getPiece(attackDiag);
-                if (moveToPiece != null
-                        && moveToPiece.getTeamColor() != myPiece.getTeamColor()
-                        && moveToPiece.getPieceType() == ChessPiece.PieceType.PAWN) {
-                    return true;
+        if (threatRow > 0 && threatRow <= 8) {
+            //Attack
+            for (int attackCol : new int[]{thisCol + 1, thisCol - 1}) {
+                if (attackCol > 0 && attackCol <= 8) {
+                    chess.ChessPosition attackDiag = new ChessPosition(threatRow, attackCol);
+                    ChessPiece moveToPiece = board.getPiece(attackDiag);
+                    if (moveToPiece != null
+                            && moveToPiece.getTeamColor() != myPiece.getTeamColor()
+                            && moveToPiece.getPieceType() == ChessPiece.PieceType.PAWN) {
+                        return true;
 
+                    }
                 }
             }
+
+
         }
 
 
         return false;
     }
+
+
+    /**
+     * finds the ChessPosition of the King
+     *
+     * @param teamColor which team's King to find
+     * @return True if the specified team is in check
+     */
+    public static ChessPosition findKing(ChessGame.TeamColor teamColor, ChessBoard board) {
+        //find king
+        for (int currentCol = 1; currentCol <= 8; currentCol++) {
+            for (int currentRow = 1; currentRow <= 8; currentRow++) {
+                ChessPosition squareChecked = new ChessPosition(currentRow, currentCol);
+                ChessPiece suspectKing = board.getPiece(squareChecked);
+                if (suspectKing != null && suspectKing.getPieceType() == ChessPiece.PieceType.KING
+                        && suspectKing.getTeamColor() == teamColor) {
+                    return squareChecked;
+                }
+            }
+        }
+        throw new RuntimeException("No King Fund");
+    }
+
 
 }
