@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
-import static chess.ChessSquareThreatenedCalculator.findKing;
-import static chess.ChessSquareThreatenedCalculator.isThreatened;
-import static java.util.List.copyOf;
+import static chess.ChessSquareThreatenedCalculator.*;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -87,7 +85,7 @@ public class ChessGame {
             for (int currentRow = 1; currentRow <= 8; currentRow++) {
                 ChessPosition placePieceChecked = new ChessPosition(currentRow, currentCol);
                 ChessPiece myPiece = gameBoard.getPiece(placePieceChecked);
-                if (placePieceChecked != null && myPiece.getTeamColor() == teamColor) {
+                if (myPiece != null && myPiece.getTeamColor() == teamColor) {
                     if (!validMoves(placePieceChecked).isEmpty()) {
                         return false;
                     }
@@ -142,8 +140,9 @@ public class ChessGame {
         //find king
         ChessPosition kingPosition = findKing(teamColor, gameBoard);
         //threatened each square around and this square
-        return ChessSquareThreatenedCalculator.isThreatened(gameBoard, teamColor, kingPosition)
-                && ChessSquareThreatenedCalculator.surroundingSquaresThreatened(gameBoard, teamColor, kingPosition);
+        return isThreatened(gameBoard, teamColor, kingPosition)
+                && surroundingSquaresThreatened(gameBoard, teamColor, kingPosition)
+                && checkNoValidMoves(teamColor);
     }
 
     /**
