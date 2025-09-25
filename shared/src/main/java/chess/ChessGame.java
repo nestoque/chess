@@ -6,6 +6,7 @@ import java.util.Objects;
 
 import static chess.ChessSquareThreatenedCalculator.findKing;
 import static chess.ChessSquareThreatenedCalculator.isThreatened;
+import static java.util.List.copyOf;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -192,7 +193,7 @@ public class ChessGame {
      * @param move the move to execute
      */
     public ChessBoard makeLegalMove(ChessMove move) {
-        ChessBoard newBoard = gameBoard;
+        ChessBoard newBoard = new ChessBoard(gameBoard.squares);
         ChessPosition myStartPosition = move.getStartPosition();
         ChessPiece myPiece = newBoard.getPiece(myStartPosition);
         newBoard.removePiece(myStartPosition);

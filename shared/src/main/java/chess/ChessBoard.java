@@ -17,6 +17,14 @@ public class ChessBoard {
 
     }
 
+    public ChessBoard(ChessPiece[][] constructSquares) {
+        this.squares = Arrays.stream(constructSquares)
+                .map(row -> Arrays.stream(row)
+                        .map(piece -> piece == null ? null : new ChessPiece(piece.getTeamColor(), piece.getPieceType()))
+                        .toArray(ChessPiece[]::new))
+                .toArray(ChessPiece[][]::new);
+    }
+
     /**
      * Adds a chess piece to the chessboard
      *
@@ -110,5 +118,10 @@ public class ChessBoard {
             }
         }
         return boardString.toString();
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 }

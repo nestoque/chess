@@ -78,17 +78,23 @@ public class ChessSquareThreatenedCalculator {
                 if ((8 >= startRow) && (startRow > 0) && (8 >= startCol) && (startCol > 0)) {
                     ChessPosition moveFromPosition = new ChessPosition(startRow, startCol);
                     ChessPiece attackingPiece = board.getPiece((moveFromPosition));
+
+                    //piece exists
                     if (attackingPiece != null) {
                         ChessPiece.PieceType movetoPieceType = attackingPiece.getPieceType();
+                        //add if piece is enemy and a good type
                         if (attackingPiece.getTeamColor() != teamColor) {
                             if (threateningPieces.contains(movetoPieceType)) {
                                 return true;
                             } else if (currentDistance == 1 && movetoPieceType == ChessPiece.PieceType.KING) {
                                 return true;
                             }
+                        } else {
+                            break;
                         }
+                    } else {
+                        continue;
                     }
-                    break;
                 } else {
                     break;
                 }
