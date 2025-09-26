@@ -39,15 +39,37 @@ public class ChessSquareThreatenedCalculator {
     }
 
     /**
-     * Determines if the given team is in checkmate
+     * returns true is f
      *
      * @param teamColor which team to check for checkmate
      * @return True if the specified team is in checkmate
      */
-    public static boolean surroundingSquaresThreatened(ChessBoard board, ChessGame.TeamColor teamColor, ChessPosition position) {
-        //find king
+    public static boolean castleSquaresThreatenedOrContainsPieces(ChessBoard board, ChessGame.TeamColor teamColor, ChessPosition position) {
         int thisRow = position.getRow();
         int thisCol = position.getColumn();
+        int directionCheck = (thisCol == 1) ? 1 : -1;
+        for (int newCol = thisCol + directionCheck; newCol != 5; newCol += directionCheck) {
+            ChessPosition offsetPosition = new ChessPosition(thisRow, newCol);
+            if (board.getPiece(offsetPosition) != null) {
+                return true;
+            }
+            if (isThreatened(board, teamColor, offsetPosition)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Determines if surroudning squares threatened
+     *
+     * @param teamColor which team to check for Threatened
+     * @return True if the specified team is in Threatened
+     */
+    public static boolean surroundingSquaresThreatened(ChessBoard board, ChessGame.TeamColor teamColor, ChessPosition position) {
+        int thisRow = position.getRow();
+        int thisCol = position.getColumn();
+
         for (int[] offset : SURROUNDING_OFFSETS) {
             ChessPosition offsetPosition = new ChessPosition(thisRow + offset[0], thisCol + offset[1]);
             if (!isThreatened(board, teamColor, position)) {
@@ -55,6 +77,7 @@ public class ChessSquareThreatenedCalculator {
             }
         }
         return true;
+
     }
 
 
@@ -131,7 +154,6 @@ public class ChessSquareThreatenedCalculator {
                                                ChessPosition position) {
 
         int thisCol = position.getColumn();
-        ChessPiece myPiece = board.getPiece(position);
         int threatRow = switch (teamColor) {
             case WHITE -> {
                 yield position.getRow() + 1;
@@ -145,10 +167,10 @@ public class ChessSquareThreatenedCalculator {
             //Attack
             for (int attackCol : new int[]{thisCol + 1, thisCol - 1}) {
                 if (attackCol > 0 && attackCol <= 8) {
-                    chess.ChessPosition attackDiag = new ChessPosition(threatRow, attackCol);
+                    ChessPosition attackDiag = new ChessPosition(threatRow, attackCol);
                     ChessPiece moveToPiece = board.getPiece(attackDiag);
                     if (moveToPiece != null
-                            && moveToPiece.getTeamColor() != myPiece.getTeamColor()
+                            && moveToPiece.getTeamColor() != teamColor
                             && moveToPiece.getPieceType() == ChessPiece.PieceType.PAWN) {
                         return true;
 

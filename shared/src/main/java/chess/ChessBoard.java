@@ -106,7 +106,7 @@ public class ChessBoard {
     @Override
     public String toString() {
         StringBuilder boardString = new StringBuilder();
-        for (int thisRow = 0; thisRow < 8; thisRow++) {
+        for (int thisRow = 7; thisRow >= 0; thisRow--) {
             boardString.append("\n|");
             for (int thisCol = 0; thisCol < 8; thisCol++) {
                 if (squares[thisRow][thisCol] == null) {
