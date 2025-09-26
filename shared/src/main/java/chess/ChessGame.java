@@ -141,18 +141,18 @@ public class ChessGame {
             case PAWN -> { //en_passant
                 // if this is a pawn
                 // this row is same as last move row,
+                int moveDirection;
+                int possibleJumpRow = switch (teamColor) {
+                    case BLACK -> {
+                        moveDirection = -1;
+                        yield 4;
+                    }
+                    case WHITE -> {
+                        moveDirection = 1;
+                        yield 5;
+                    }
+                };
                 if (lastMove != null && lastMove.getEndPosition().getRow() == startPosition.getRow()) {
-                    int moveDirection;
-                    int possibleJumpRow = switch (teamColor) {
-                        case BLACK -> {
-                            moveDirection = -1;
-                            yield 4;
-                        }
-                        case WHITE -> {
-                            moveDirection = 1;
-                            yield 5;
-                        }
-                    };
                     // check if it's a pawn
                     if (gameBoard.getPiece(lastMove.getEndPosition()).getPieceType() == PAWN
                             && startPosition.getRow() == possibleJumpRow
@@ -215,32 +215,7 @@ public class ChessGame {
         if (validMoves(startPosition).contains(move) && pieceToMove.getTeamColor() == thisTeam) {
             //check if castling pieces have moved
             ChessPiece.PieceType thisPieceType = pieceToMove.getPieceType();
-            switch (thisPieceType) {
-                case KING -> {
-                    if (move.getStartPosition().equals(WHITE_KING_POSITION) && thisTeam == TeamColor.WHITE) {
-                        //if type is king, remove both for team
-                        kingsideCastlePiecesHaventMoved[TeamColor.WHITE.ordinal()] = false;
-                        queensideCastlePiecesHaventMoved[TeamColor.WHITE.ordinal()] = false;
-
-                    } else if (move.getStartPosition().equals(BLACK_KING_POSITION) && thisTeam == BLACK) {
-                        kingsideCastlePiecesHaventMoved[BLACK.ordinal()] = false;
-                        queensideCastlePiecesHaventMoved[BLACK.ordinal()] = false;
-                    }
-                }
-                case ROOK -> {
-                    if (startPosition.getRow() == 1 && thisTeam == TeamColor.WHITE) {
-                        switch (startPosition.getColumn()) {
-                            case 1 -> queensideCastlePiecesHaventMoved[TeamColor.WHITE.ordinal()] = false;
-                            case 8 -> kingsideCastlePiecesHaventMoved[TeamColor.WHITE.ordinal()] = false;
-                        }
-                    } else if (startPosition.getRow() == 8 && thisTeam == BLACK) {
-                        switch (startPosition.getColumn()) {
-                            case 1 -> queensideCastlePiecesHaventMoved[BLACK.ordinal()] = false;
-                            case 8 -> kingsideCastlePiecesHaventMoved[TeamColor.BLACK.ordinal()] = false;
-                        }
-                    }
-                }
-            }
+            updateCastleFlags(thisPieceType, move, thisTeam, startPosition);
             gameBoard = makeLegalMove(move);
             lastMove = move;
             switch (thisTeam) {
@@ -249,6 +224,35 @@ public class ChessGame {
             }
         } else {
             throw new InvalidMoveException("Invalid Move");
+        }
+    }
+
+    public void updateCastleFlags(ChessPiece.PieceType thisPieceType, ChessMove move, TeamColor thisTeam, ChessPosition startPosition) {
+        switch (thisPieceType) {
+            case KING -> {
+                if (move.getStartPosition().equals(WHITE_KING_POSITION) && thisTeam == TeamColor.WHITE) {
+                    //if type is king, remove both for team
+                    kingsideCastlePiecesHaventMoved[TeamColor.WHITE.ordinal()] = false;
+                    queensideCastlePiecesHaventMoved[TeamColor.WHITE.ordinal()] = false;
+
+                } else if (move.getStartPosition().equals(BLACK_KING_POSITION) && thisTeam == BLACK) {
+                    kingsideCastlePiecesHaventMoved[BLACK.ordinal()] = false;
+                    queensideCastlePiecesHaventMoved[BLACK.ordinal()] = false;
+                }
+            }
+            case ROOK -> {
+                if (startPosition.getRow() == 1 && thisTeam == TeamColor.WHITE) {
+                    switch (startPosition.getColumn()) {
+                        case 1 -> queensideCastlePiecesHaventMoved[TeamColor.WHITE.ordinal()] = false;
+                        case 8 -> kingsideCastlePiecesHaventMoved[TeamColor.WHITE.ordinal()] = false;
+                    }
+                } else if (startPosition.getRow() == 8 && thisTeam == BLACK) {
+                    switch (startPosition.getColumn()) {
+                        case 1 -> queensideCastlePiecesHaventMoved[BLACK.ordinal()] = false;
+                        case 8 -> kingsideCastlePiecesHaventMoved[TeamColor.BLACK.ordinal()] = false;
+                    }
+                }
+            }
         }
     }
 
@@ -340,31 +344,9 @@ public class ChessGame {
                     int startCol = myStartPosition.getColumn();
                     int endCol = myEndPosition.getColumn();
                     if (Math.abs(startCol - endCol) > 0) {
-                        switch (teamTurn) {
-                            case BLACK -> {
-                                if (move.equals(BLACK_QUEENSIDE_CASTLE)) {
-                                    newBoard.removePiece(BLACK_QUEENSIDE_CASTLE_ROOK_POSITION_START);
-                                    newBoard.addPiece(BLACK_QUEENSIDE_CASTLE_ROOK_POSITION_END, new ChessPiece(BLACK, ROOK));
-                                } else if (move.equals(BLACK_KINGSIDE_CASTLE)) {
-                                    newBoard.removePiece(BLACK_KINGSIDE_CASTLE_ROOK_POSITION_START);
-                                    newBoard.addPiece(BLACK_KINGSIDE_CASTLE_ROOK_POSITION_END, new ChessPiece(BLACK, ROOK));
-                                }
-
-                            }
-                            case WHITE -> {
-                                if (move.equals(WHITE_QUEENSIDE_CASTLE)) {
-                                    newBoard.removePiece(WHITE_QUEENSIDE_CASTLE_ROOK_POSITION_START);
-                                    newBoard.addPiece(WHITE_QUEENSIDE_CASTLE_ROOK_POSITION_END, new ChessPiece(TeamColor.WHITE, ROOK));
-                                } else if (move.equals(WHITE_KINGSIDE_CASTLE)) {
-                                    newBoard.removePiece(WHITE_KINGSIDE_CASTLE_ROOK_POSITION_START);
-                                    newBoard.addPiece(WHITE_KINGSIDE_CASTLE_ROOK_POSITION_END, new ChessPiece(TeamColor.WHITE, ROOK));
-                                }
-                            }
-                        }
+                        makeLegalKingMoveHelper(teamTurn, move, newBoard);
                     }
-
                 }
-
                 case PAWN -> // en passant
                     // if not same col, and null piece there, then remove the piece - direction
                         newBoard.removePiece(new ChessPosition(myStartPosition.getRow(), myEndPosition.getColumn()));
@@ -374,6 +356,30 @@ public class ChessGame {
             newBoard.addPiece(move.getEndPosition(), myPiece);
         }
         return newBoard;
+    }
+
+    public static void makeLegalKingMoveHelper(TeamColor teamTurn, ChessMove move, ChessBoard newBoard) {
+        switch (teamTurn) {
+            case BLACK -> {
+                if (move.equals(BLACK_QUEENSIDE_CASTLE)) {
+                    newBoard.removePiece(BLACK_QUEENSIDE_CASTLE_ROOK_POSITION_START);
+                    newBoard.addPiece(BLACK_QUEENSIDE_CASTLE_ROOK_POSITION_END, new ChessPiece(BLACK, ROOK));
+                } else if (move.equals(BLACK_KINGSIDE_CASTLE)) {
+                    newBoard.removePiece(BLACK_KINGSIDE_CASTLE_ROOK_POSITION_START);
+                    newBoard.addPiece(BLACK_KINGSIDE_CASTLE_ROOK_POSITION_END, new ChessPiece(BLACK, ROOK));
+                }
+
+            }
+            case WHITE -> {
+                if (move.equals(WHITE_QUEENSIDE_CASTLE)) {
+                    newBoard.removePiece(WHITE_QUEENSIDE_CASTLE_ROOK_POSITION_START);
+                    newBoard.addPiece(WHITE_QUEENSIDE_CASTLE_ROOK_POSITION_END, new ChessPiece(TeamColor.WHITE, ROOK));
+                } else if (move.equals(WHITE_KINGSIDE_CASTLE)) {
+                    newBoard.removePiece(WHITE_KINGSIDE_CASTLE_ROOK_POSITION_START);
+                    newBoard.addPiece(WHITE_KINGSIDE_CASTLE_ROOK_POSITION_END, new ChessPiece(TeamColor.WHITE, ROOK));
+                }
+            }
+        }
     }
 
 
