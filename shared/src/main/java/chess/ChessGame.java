@@ -92,7 +92,6 @@ public class ChessGame {
         }
         TeamColor teamColor = myPiece.getTeamColor();
         Collection<ChessMove> pieceCapableMovesList = myPiece.pieceMoves(gameBoard, startPosition);
-
         //castling
         switch (myPiece.getPieceType()) {
             case KING -> {
@@ -100,7 +99,6 @@ public class ChessGame {
                     //check if rook is in right place
                     //Check if any square in between is in check,
                     //Check that every square in between is empty
-
                     if (kingsideCastlePiecesHaventMoved[TeamColor.WHITE.ordinal()]
                             && gameBoard.getPiece(WHITE_KINGSIDE_CASTLE_ROOK_POSITION_START) != null
                             && gameBoard.getPiece(WHITE_KINGSIDE_CASTLE_ROOK_POSITION_START).getPieceType() == ROOK
@@ -119,8 +117,6 @@ public class ChessGame {
                     ) {
                         pieceCapableMovesList.add(WHITE_QUEENSIDE_CASTLE);
                     }
-
-
                 } else if (!isInCheck(BLACK) && startPosition.equals(BLACK_KING_POSITION) && teamColor == BLACK) {
                     if (kingsideCastlePiecesHaventMoved[TeamColor.BLACK.ordinal()]
                             && gameBoard.getPiece(BLACK_KINGSIDE_CASTLE_ROOK_POSITION_START) != null
@@ -140,16 +136,11 @@ public class ChessGame {
                     ) {
                         pieceCapableMovesList.add(BLACK_QUEENSIDE_CASTLE);
                     }
-
                 }
             }
             case PAWN -> { //en_passant
-                /* if this is a pawn,
-                 this row is same as last move row,
-                  and that row is the jump row of a pawn,
-                  and
-                  check if its a pawn
-                *  */
+                // if this is a pawn
+                // this row is same as last move row,
                 if (lastMove != null && lastMove.getEndPosition().getRow() == startPosition.getRow()) {
                     int moveDirection;
                     int possibleJumpRow = switch (teamColor) {
@@ -162,6 +153,7 @@ public class ChessGame {
                             yield 5;
                         }
                     };
+                    // check if it's a pawn
                     if (gameBoard.getPiece(lastMove.getEndPosition()).getPieceType() == PAWN
                             && startPosition.getRow() == possibleJumpRow
                             && (lastMove.getEndPosition().getColumn() < startPosition.getColumn() + 1
@@ -184,7 +176,6 @@ public class ChessGame {
                 validMoveList.add(thisMove);
             }
         }
-
         return validMoveList;
     }
 
@@ -400,21 +391,4 @@ public class ChessGame {
         return Objects.hash(gameBoard, teamTurn);
     }
 }
-
-
-/* team var can castle, bool llowers if rook has moved, maybe even per sid
- * team var, king location?
- *
- * Ischeck, calls isthreatened
- * isthreatened??? loop  directions until meet piece, if other team and can move that direction say yet
- * stalemate, king not in check, but every surrounding place either ischeck or piece occupied
- * maybe make a valid moves function? but then need like linked list to all pieces
- *
- * for en passant, maybe a last game state is saved? use get board, setboard
- *
- * for move, update the gameboard
- *
- *
- * en passant, just adding to calculator, if last game state shows them jumping, and you can attack an empty diagonal
- *  */
 
