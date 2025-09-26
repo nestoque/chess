@@ -99,31 +99,47 @@ public class ChessSquareThreatenedCalculator {
                 startRow += movePair[0];
                 startCol += movePair[1];
                 if ((8 >= startRow) && (startRow > 0) && (8 >= startCol) && (startCol > 0)) {
-                    ChessPosition moveFromPosition = new ChessPosition(startRow, startCol);
-                    ChessPiece attackingPiece = board.getPiece((moveFromPosition));
-
-                    //piece exists
-                    if (attackingPiece != null) {
-                        ChessPiece.PieceType movetoPieceType = attackingPiece.getPieceType();
-                        //add if piece is enemy and a good type
-                        if (attackingPiece.getTeamColor() != teamColor) {
-                            if (threateningPieces.contains(movetoPieceType)) {
-                                return true;
-                            } else if (currentDistance == 1 && movetoPieceType == ChessPiece.PieceType.KING) {
-                                return true;
-                            }
-                        } else {
-                            break;
-                        }
-                    } else {
-                        continue;
-                    }
+                    int helperOutput = checkThreatenDirectionHelperFunction(startRow, startCol, board, teamColor,
+                            threateningPieces, currentDistance);
+                    if (helperOutput == 0) {
+                        break;
+                    } else if (helperOutput == 1) {
+                        return true;
+                    } //else pass
                 } else {
-                    break;
+                    break; //break
                 }
             }
         }
         return false;
+    }
+
+    public static int checkThreatenDirectionHelperFunction(int startRow, int startCol, ChessBoard board,
+                                                           ChessGame.TeamColor teamColor,
+                                                           Set<ChessPiece.PieceType> threateningPieces,
+                                                           int currentDistance) {
+        ChessPosition moveFromPosition = new ChessPosition(startRow, startCol);
+        ChessPiece attackingPiece = board.getPiece((moveFromPosition));
+
+        //piece exists
+        if (attackingPiece != null) {
+
+            ChessPiece.PieceType movetoPieceType = attackingPiece.getPieceType();
+            //add if piece is enemy and a good type
+            if (attackingPiece.getTeamColor() != teamColor) {
+                if (threateningPieces.contains(movetoPieceType)) {
+                    return 1;
+                } else if (currentDistance == 1 && movetoPieceType == ChessPiece.PieceType.KING) {
+                    return 1;
+                }
+            } else {
+                return 0; // break
+            }
+        } else {
+            return 2;
+        }
+        return 0;
+
     }
 
 

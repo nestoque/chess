@@ -58,14 +58,7 @@ public class PawnMovesCalculator {
             if (attackCol > 0 && attackCol <= 8) {
                 chess.ChessPosition attackDiag = new ChessPosition(movedRow, attackCol);
                 if (board.getPiece(attackDiag) != null && board.getPiece(attackDiag).getTeamColor() != myPiece.getTeamColor()) {
-                    if (movedRow == promotionRow) {
-                        for (PieceType promotionPiece : PROMOTION_PIECES) {
-                            myMoveList.add(new ChessMove(myPosition, attackDiag, promotionPiece));
-                        }
-                    } else {
-                        myMoveList.add(new ChessMove(myPosition, attackDiag, null));
-                    }
-
+                    myMoveList.addAll(addPromotionPieces(movedRow, promotionRow, myPosition, attackDiag));
                 }
             }
         }
@@ -73,4 +66,26 @@ public class PawnMovesCalculator {
 
         return myMoveList;
     }
+
+
+    /**
+     * @param movedRow     row moving too
+     * @param promotionRow row that would cause promotion
+     * @param myPosition   position pawn is at
+     * @param attackDiag   the position to attack
+     * @return a collection of moves with promotion pieces specified
+     */
+    public static Collection<ChessMove> addPromotionPieces(int movedRow, int promotionRow, ChessPosition myPosition, ChessPosition attackDiag) {
+        Collection<ChessMove> myMoveList = new ArrayList<>();
+        if (movedRow == promotionRow) {
+            for (PieceType promotionPiece : PROMOTION_PIECES) {
+                myMoveList.add(new ChessMove(myPosition, attackDiag, promotionPiece));
+            }
+        } else {
+            myMoveList.add(new ChessMove(myPosition, attackDiag, null));
+        }
+        return myMoveList;
+    }
+
+
 }
