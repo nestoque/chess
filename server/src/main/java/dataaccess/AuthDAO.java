@@ -1,11 +1,13 @@
 package dataaccess;
 
+import object.AuthData;
+
 public interface AuthDAO {
-    String addAuth();
+    boolean addAuth(AuthData myAuthData);
 
-    AuthData getAuth();
+    AuthData getAuth(String authToken);
 
-    void deleteAuth();
+    void deleteAuth(String authToken);
 
     void clear();
 }

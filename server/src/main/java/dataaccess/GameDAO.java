@@ -1,13 +1,20 @@
 package dataaccess;
 
+import chess.ChessGame;
+import object.GameData;
+
+import java.util.Collection;
+
 public interface GameDAO {
-    String addGame();
+    int addGame(GameData myGameData);
 
-    GameData getGame();
+    GameData getGame(int gameID);
 
-    Collection<GameData> ListGame();
+    Collection<GameData> listGame();
 
-    void deleteGame();
+    void deleteGame(int gameID);
+
+    void updateGame(GameData myGameData);
 
     void clear();
 }

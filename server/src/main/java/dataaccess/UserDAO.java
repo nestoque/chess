@@ -3,15 +3,11 @@ package dataaccess;
 import object.UserData;
 
 public interface UserDAO {
-    String addUser();
+    boolean addUser(UserData myUserData);
 
-    UserData getUser();
+    UserData getUser(String username);
 
-    void deleteUser();
+    void deleteUser(String username);
 
-    void clear() {
-
-    }
-
-    ;
+    void clear();
 }
