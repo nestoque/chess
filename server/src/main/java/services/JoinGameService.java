@@ -7,9 +7,13 @@ import object.AuthData;
 import object.GameData;
 import requests.JoinGameRequest;
 
+import java.util.Set;
+
 public class JoinGameService {
     AuthDAO authDAO;
     GameDAO gameDAO;
+
+    private final Set<String> TEAM_COLORS = Set.of(new String[]{"WHITE", "BLACK"});
 
     public JoinGameService(AuthDAO myAuthDAO, GameDAO myGameDAO) {
         authDAO = myAuthDAO;
@@ -17,7 +21,8 @@ public class JoinGameService {
     }
 
     public void joinGame(String authToken, JoinGameRequest req) throws ServiceException {
-        if (req.playerColor() == null || req.gameID() < 1) {
+        if (req.playerColor() == null || req.playerColor().isEmpty() ||
+                !TEAM_COLORS.contains(req.playerColor()) || req.gameID() < 1) {
             throw new ServiceException(400, "bad request");
         }
 
@@ -36,14 +41,14 @@ public class JoinGameService {
         //Check Color
         GameData updatedGame;
         switch (req.playerColor()) {
-            case WHITE -> {
+            case "WHITE" -> {
                 if (myGame.whiteUsername() != null) {
                     throw new ServiceException(403, "already taken");
                 } else {
                     updatedGame = myGame.setWhiteUsername(myAuth.username());
                 }
             }
-            case BLACK -> {
+            case "BLACK" -> {
                 if (myGame.blackUsername() != null) {
                     throw new ServiceException(403, "already taken");
                 } else {

@@ -3,7 +3,7 @@ package requests;
 import chess.ChessGame;
 
 public record JoinGameRequest(
-        ChessGame.TeamColor playerColor,
+        String playerColor,
         int gameID) {
     //{ "playerColor":"WHITE/BLACK", "gameID": 1234 }
 }
