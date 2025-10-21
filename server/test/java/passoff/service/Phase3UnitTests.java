@@ -7,23 +7,17 @@ import handlers.*;
 import object.AuthData;
 import object.GameData;
 import object.UserData;
-import org.eclipse.jetty.http.HttpTokens;
-import org.eclipse.jetty.server.Authentication;
-import org.eclipse.jetty.util.log.Log;
 import org.junit.jupiter.api.*;
 import passoff.model.*;
-import passoff.server.TestServerFacade;
 import requests.CreateGameRequest;
 import requests.JoinGameRequest;
 import requests.LoginRequest;
 import requests.RegisterRequest;
 import responses.*;
-import server.Server;
 import services.*;
 import utils.TokenUtils;
 
-import java.net.HttpURLConnection;
-import java.security.Provider;
+
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,7 +31,6 @@ public class Phase3UnitTests {
     private String gameName = "Test_Game";
     private String playerColor = "WHITE";
 
-    private Gson json;
     private UserDAO userDAO;
     private AuthDAO authDAO;
     private GameDAO gameDAO;
@@ -48,13 +41,7 @@ public class Phase3UnitTests {
     private ListGameService listGamesService;
     private CreateGameService createGameService;
     private JoinGameService joinGameService;
-    private ClearHandler clearHandler;
-    private RegisterHandler registerHandler;
-    private LoginHandler loginHandler;
-    private LogoutHandler logoutHandler;
-    private ListGamesHandler listGamesHandler;
-    private CreateGameHandler createGameHandler;
-    private JoinGameHandler joinGameHandler;
+
 
     @BeforeEach
     public void startup() {
@@ -70,16 +57,6 @@ public class Phase3UnitTests {
         listGamesService = new ListGameService(authDAO, gameDAO);
         createGameService = new CreateGameService(authDAO, gameDAO);
         joinGameService = new JoinGameService(authDAO, gameDAO);
-
-/*        //Setup Handlers
-        Gson json = new Gson();
-        clearHandler = new ClearHandler(clearService, json);
-        registerHandler = new RegisterHandler(registerService, json);
-        loginHandler = new LoginHandler(loginService, json);
-        logoutHandler = new LogoutHandler(logoutService, json);
-        listGamesHandler = new ListGamesHandler(listGamesService, json);
-        createGameHandler = new CreateGameHandler(createGameService, json);
-        joinGameHandler = new JoinGameHandler(joinGameService, json);*/
     }
 
     @AfterEach
@@ -260,10 +237,10 @@ public class Phase3UnitTests {
         authDAO.addAuth(testAuth);
 
         CreateGameRequest newCreateGameReq = new CreateGameRequest(gameName);
-        CreateGameResult firstCreateGameRes = createGameService.createGame(testToken, newCreateGameReq);
-        CreateGameResult secondCreateGameRes = createGameService.createGame(testToken, newCreateGameReq);
-        CreateGameResult thirdCreateGameRes = createGameService.createGame(testToken, newCreateGameReq);
-        CreateGameResult fourthCreateGameRes = createGameService.createGame(testToken, newCreateGameReq);
+        createGameService.createGame(testToken, newCreateGameReq);
+        createGameService.createGame(testToken, newCreateGameReq);
+        createGameService.createGame(testToken, newCreateGameReq);
+        createGameService.createGame(testToken, newCreateGameReq);
 
 
         ListGamesResult actualListGamesResult = listGamesService.listGames(testToken);
