@@ -88,7 +88,7 @@ public class Phase3UnitTests {
     //Register +
     @Test
     @DisplayName("Register +")
-    public void RegisterSuccess() throws ServiceException {
+    public void registerSuccess() throws ServiceException {
         RegisterRequest newRegReq = new RegisterRequest(username, password, email);
         UserData expectedUserData = new UserData(username, password, email);
         RegisterResult newRegRes = registerService.register(newRegReq);
@@ -101,7 +101,7 @@ public class Phase3UnitTests {
     //Register -
     @Test
     @DisplayName("Register -")
-    public void RegisterAlreadyTakenFail() throws ServiceException {
+    public void registerAlreadyTakenFail() throws ServiceException {
         UserData testUser = new UserData(username, password, email);
         userDAO.addUser(testUser);
 
@@ -115,7 +115,7 @@ public class Phase3UnitTests {
     //Login +
     @Test
     @DisplayName("Login +")
-    public void LoginSuccess() throws ServiceException {
+    public void loginSuccess() throws ServiceException {
         UserData testUser = new UserData(username, password, email);
         userDAO.addUser(testUser);
 
@@ -129,7 +129,7 @@ public class Phase3UnitTests {
     //Login -
     @Test
     @DisplayName("Login -")
-    public void LoginWrongPassword() throws ServiceException {
+    public void loginWrongPassword() throws ServiceException {
         UserData testUser = new UserData(username, "different password", email);
         userDAO.addUser(testUser);
 
@@ -142,7 +142,7 @@ public class Phase3UnitTests {
     //Logout +
     @Test
     @DisplayName("Logout +")
-    public void LogoutSucces() throws ServiceException {
+    public void logoutSucces() throws ServiceException {
         String testToken = TokenUtils.generateToken();
         AuthData testAuth = new AuthData(testToken, username);
         authDAO.addAuth(testAuth);
@@ -154,7 +154,7 @@ public class Phase3UnitTests {
     //Logout -
     @Test
     @DisplayName("Logout -")
-    public void LogoutWrongAuth() throws ServiceException {
+    public void logoutWrongAuth() throws ServiceException {
         String testToken = TokenUtils.generateToken();
         AuthData testAuth = new AuthData(testToken, username);
         authDAO.addAuth(testAuth);
@@ -168,7 +168,7 @@ public class Phase3UnitTests {
     //Create Game +
     @Test
     @DisplayName("Create Game +")
-    public void CreateGameSuccess() throws ServiceException {
+    public void createGameSuccess() throws ServiceException {
         String testToken = TokenUtils.generateToken();
         AuthData testAuth = new AuthData(testToken, username);
         authDAO.addAuth(testAuth);
@@ -181,7 +181,7 @@ public class Phase3UnitTests {
     //Create Game -
     @Test
     @DisplayName("Create Game -")
-    public void CreateGameNoName() throws ServiceException {
+    public void createGameNoName() throws ServiceException {
         String testToken = TokenUtils.generateToken();
         AuthData testAuth = new AuthData(testToken, username);
         authDAO.addAuth(testAuth);
@@ -195,7 +195,7 @@ public class Phase3UnitTests {
     //Join Game +
     @Test
     @DisplayName("Join Game +")
-    public void JoinGameSuccess() throws ServiceException {
+    public void joinGameSuccess() throws ServiceException {
         String testToken = TokenUtils.generateToken();
         AuthData testAuth = new AuthData(testToken, username);
         authDAO.addAuth(testAuth);
@@ -213,7 +213,7 @@ public class Phase3UnitTests {
     //Join Game -
     @Test
     @DisplayName("Join Game -")
-    public void JoinGameSameColor() throws ServiceException {
+    public void joinGameSameColor() throws ServiceException {
         String testToken = TokenUtils.generateToken();
         AuthData testAuth = new AuthData(testToken, username);
         authDAO.addAuth(testAuth);
@@ -231,7 +231,7 @@ public class Phase3UnitTests {
     //List Game +
     @Test
     @DisplayName("List Game +")
-    public void ListGameSuccess() throws ServiceException {
+    public void listGameSuccess() throws ServiceException {
         String testToken = TokenUtils.generateToken();
         AuthData testAuth = new AuthData(testToken, username);
         authDAO.addAuth(testAuth);
@@ -254,7 +254,7 @@ public class Phase3UnitTests {
     //List Game -
     @Test
     @DisplayName("List Game -")
-    public void ListGameUnauthorized() throws ServiceException {
+    public void listGameUnauthorized() throws ServiceException {
         String badAuthToken = TokenUtils.generateToken();
 
         ServiceException exception = assertThrows(ServiceException.class, () -> listGamesService.listGames(badAuthToken), "Didn't throw exception");
