@@ -8,8 +8,6 @@ import requests.RegisterRequest;
 import responses.RegisterResult;
 import utils.TokenUtils;
 
-import java.security.Provider;
-
 public class RegisterService {
     UserDAO userDAO;
     AuthDAO authDAO;

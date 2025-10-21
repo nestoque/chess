@@ -9,7 +9,6 @@ import responses.LoginResult;
 import utils.TokenUtils;
 
 import java.util.Objects;
-import java.util.UUID;
 
 public class LoginService {
     UserDAO userDAO;

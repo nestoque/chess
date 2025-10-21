@@ -1,6 +1,5 @@
 package services;
 
-import chess.ChessGame;
 import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
 import object.AuthData;
