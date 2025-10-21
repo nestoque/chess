@@ -187,7 +187,8 @@ public class Phase3UnitTests {
         authDAO.addAuth(testAuth);
 
         CreateGameRequest badCreateGameReq = new CreateGameRequest("");
-        ServiceException exception = assertThrows(ServiceException.class, () -> createGameService.createGame(testToken, badCreateGameReq), "Didn't throw exception");
+        ServiceException exception = assertThrows(ServiceException.class, () ->
+                createGameService.createGame(testToken, badCreateGameReq), "Didn't throw exception");
         assertEquals(400, exception.getStatusCode());
         assertEquals("bad request", exception.getMessage());
     }
@@ -223,7 +224,8 @@ public class Phase3UnitTests {
 
         JoinGameRequest newJoinGameReq = new JoinGameRequest(playerColor, 1);
 
-        ServiceException exception = assertThrows(ServiceException.class, () -> joinGameService.joinGame(testAuth.authToken(), newJoinGameReq), "Didn't throw exception");
+        ServiceException exception = assertThrows(ServiceException.class, () ->
+                joinGameService.joinGame(testAuth.authToken(), newJoinGameReq), "Didn't throw exception");
         assertEquals(403, exception.getStatusCode());
         assertEquals("already taken", exception.getMessage());
     }
