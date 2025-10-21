@@ -5,8 +5,8 @@ import io.javalin.http.Context;
 import requests.LoginRequest;
 
 import responses.LoginResult;
-import services.LoginService;
-import services.ServiceException;
+import service.LoginService;
+import service.ServiceException;
 
 import java.util.Map;
 

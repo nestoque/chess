@@ -3,7 +3,7 @@ package server;
 import com.google.gson.Gson;
 import dataaccess.*;
 import handlers.*;
-import services.*;
+import service.*;
 import io.javalin.*;
 
 public class Server {

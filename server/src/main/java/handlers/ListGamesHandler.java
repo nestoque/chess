@@ -3,8 +3,8 @@ package handlers;
 import com.google.gson.Gson;
 import io.javalin.http.Context;
 import responses.ListGamesResult;
-import services.ListGameService;
-import services.ServiceException;
+import service.ListGameService;
+import service.ServiceException;
 
 import java.util.Map;
 

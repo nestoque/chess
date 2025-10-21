@@ -1,24 +1,19 @@
-package passoff.service;
+package service;
 
 import chess.ChessGame;
-import com.google.gson.Gson;
 import dataaccess.*;
-import handlers.*;
 import object.AuthData;
 import object.GameData;
 import object.UserData;
 import org.junit.jupiter.api.*;
-import passoff.model.*;
 import requests.CreateGameRequest;
 import requests.JoinGameRequest;
 import requests.LoginRequest;
 import requests.RegisterRequest;
 import responses.*;
-import services.*;
+import service.*;
 import utils.TokenUtils;
 
-
-import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 

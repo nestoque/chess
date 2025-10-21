@@ -2,8 +2,8 @@ package handlers;
 
 import com.google.gson.Gson;
 import io.javalin.http.Context;
-import services.LogoutService;
-import services.ServiceException;
+import service.LogoutService;
+import service.ServiceException;
 
 import java.util.Map;
 

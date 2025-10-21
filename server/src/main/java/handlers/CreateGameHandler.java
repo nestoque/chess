@@ -4,8 +4,8 @@ import com.google.gson.Gson;
 import io.javalin.http.Context;
 import requests.CreateGameRequest;
 import responses.CreateGameResult;
-import services.CreateGameService;
-import services.ServiceException;
+import service.CreateGameService;
+import service.ServiceException;
 
 import java.util.Map;
 

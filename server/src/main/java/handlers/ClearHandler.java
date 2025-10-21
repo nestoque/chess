@@ -2,7 +2,7 @@ package handlers;
 
 import com.google.gson.Gson;
 import io.javalin.http.Context;
-import services.ClearService;
+import service.ClearService;
 
 import java.util.Map;
 
