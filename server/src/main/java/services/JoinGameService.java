@@ -12,7 +12,7 @@ public class JoinGameService {
     AuthDAO authDAO;
     GameDAO gameDAO;
 
-    private final Set<String> TEAM_COLORS = Set.of(new String[]{"WHITE", "BLACK"});
+    private static final Set<String> TEAM_COLORS = Set.of(new String[]{"WHITE", "BLACK"});
 
     public JoinGameService(AuthDAO myAuthDAO, GameDAO myGameDAO) {
         authDAO = myAuthDAO;

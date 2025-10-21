@@ -25,11 +25,6 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
-    public void deleteGame(int gameID) {
-        gameHashMap.remove(gameID);
-    }
-
-    @Override
     public void updateGame(GameData myGameData) {
         gameHashMap.put(myGameData.gameID(), myGameData); //replaces
     }
