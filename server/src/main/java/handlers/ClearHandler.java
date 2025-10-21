@@ -8,20 +8,23 @@ import java.util.Map;
 
 public class ClearHandler {
     ClearService clearService;
+    Gson json;
 
-    public ClearHandler(ClearService myClearService) {
+    public ClearHandler(ClearService myClearService, Gson myJson) {
         clearService = myClearService;
+        json = myJson;
     }
 
 
     public void handleRequest(Context ctx) {
+        ctx.contentType("application/json");
         try {
             clearService.clear();
             ctx.status(200);
-            ctx.json(Map.of());
+            ctx.json(json.toJson(Map.of()));
         } catch (Exception e) {
             ctx.status(500);
-            ctx.json(Map.of("message", "Error: " + e.getMessage()));
+            ctx.json(json.toJson(Map.of("message", "Error: " + e.getMessage())));
         }
     }
 }

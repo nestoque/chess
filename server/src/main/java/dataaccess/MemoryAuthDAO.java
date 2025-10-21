@@ -5,7 +5,7 @@ import object.AuthData;
 import java.util.HashMap;
 
 public class MemoryAuthDAO implements AuthDAO {
-    final static private HashMap<String, AuthData> authHashMap = new HashMap<>();
+    final private HashMap<String, AuthData> authHashMap = new HashMap<>();
 
     @Override
     public boolean addAuth(AuthData myAuthData) {

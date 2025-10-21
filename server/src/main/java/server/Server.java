@@ -1,5 +1,6 @@
 package server;
 
+import com.google.gson.Gson;
 import dataaccess.*;
 import handlers.*;
 import services.*;
@@ -11,6 +12,8 @@ public class Server {
     private final Javalin javalin;
 
     public Server() {
+        //setup Gson
+        Gson json = new Gson();
         //Setup DAOs
         UserDAO userDAO = new MemoryUserDAO();
         AuthDAO authDAO = new MemoryAuthDAO();
@@ -25,13 +28,13 @@ public class Server {
         JoinGameService joinGameService = new JoinGameService(authDAO, gameDAO);
 
         //Setup Handlers
-        ClearHandler clearHandler = new ClearHandler(clearService);
-        RegisterHandler registerHandler = new RegisterHandler(registerService);
-        LoginHandler loginHandler = new LoginHandler(loginService);
-        LogoutHandler logoutHandler = new LogoutHandler(logoutService);
-        ListGamesHandler listGamesHandler = new ListGamesHandler(listGamesService);
-        CreateGameHandler createGameHandler = new CreateGameHandler(createGameService);
-        JoinGameHandler joinGameHandler = new JoinGameHandler(joinGameService);
+        ClearHandler clearHandler = new ClearHandler(clearService, json);
+        RegisterHandler registerHandler = new RegisterHandler(registerService, json);
+        LoginHandler loginHandler = new LoginHandler(loginService, json);
+        LogoutHandler logoutHandler = new LogoutHandler(logoutService, json);
+        ListGamesHandler listGamesHandler = new ListGamesHandler(listGamesService, json);
+        CreateGameHandler createGameHandler = new CreateGameHandler(createGameService, json);
+        JoinGameHandler joinGameHandler = new JoinGameHandler(joinGameService, json);
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
                 .delete("/db", clearHandler::handleRequest)
