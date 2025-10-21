@@ -64,6 +64,7 @@ public class Phase3UnitTests {
 
     //Clear Positive
     @Test
+    @Order(1)
     @DisplayName("Clear +")
     public void cleanup() {
         UserData testUser = new UserData(username, password, email);
@@ -79,9 +80,18 @@ public class Phase3UnitTests {
         assertNull(gameDAO.getGame(1), "games not cleared");
     }
 
+    @Test
+    @Order(2)
+    @DisplayName("Clear Service Init")
+    public void clearServiceSetup() {
+        assertEquals(userDAO, clearService.userDAO);
+        assertEquals(authDAO, clearService.authDAO);
+        assertEquals(gameDAO, clearService.gameDAO);
+    }
 
     //Register +
     @Test
+    @Order(3)
     @DisplayName("Register +")
     public void registerSuccess() throws ServiceException {
         RegisterRequest newRegReq = new RegisterRequest(username, password, email);
@@ -95,6 +105,7 @@ public class Phase3UnitTests {
 
     //Register -
     @Test
+    @Order(4)
     @DisplayName("Register -")
     public void registerAlreadyTakenFail() throws ServiceException {
         UserData testUser = new UserData(username, password, email);
@@ -109,6 +120,7 @@ public class Phase3UnitTests {
 
     //Login +
     @Test
+    @Order(5)
     @DisplayName("Login +")
     public void loginSuccess() throws ServiceException {
         UserData testUser = new UserData(username, password, email);
@@ -123,6 +135,7 @@ public class Phase3UnitTests {
 
     //Login -
     @Test
+    @Order(6)
     @DisplayName("Login -")
     public void loginWrongPassword() throws ServiceException {
         UserData testUser = new UserData(username, "different password", email);
@@ -136,6 +149,7 @@ public class Phase3UnitTests {
 
     //Logout +
     @Test
+    @Order(7)
     @DisplayName("Logout +")
     public void logoutSucces() throws ServiceException {
         String testToken = TokenUtils.generateToken();
@@ -148,6 +162,7 @@ public class Phase3UnitTests {
 
     //Logout -
     @Test
+    @Order(8)
     @DisplayName("Logout -")
     public void logoutWrongAuth() throws ServiceException {
         String testToken = TokenUtils.generateToken();
@@ -162,6 +177,7 @@ public class Phase3UnitTests {
 
     //Create Game +
     @Test
+    @Order(9)
     @DisplayName("Create Game +")
     public void createGameSuccess() throws ServiceException {
         String testToken = TokenUtils.generateToken();
@@ -175,6 +191,7 @@ public class Phase3UnitTests {
 
     //Create Game -
     @Test
+    @Order(10)
     @DisplayName("Create Game -")
     public void createGameNoName() throws ServiceException {
         String testToken = TokenUtils.generateToken();
@@ -190,6 +207,7 @@ public class Phase3UnitTests {
 
     //Join Game +
     @Test
+    @Order(11)
     @DisplayName("Join Game +")
     public void joinGameSuccess() throws ServiceException {
         String testToken = TokenUtils.generateToken();
@@ -208,6 +226,7 @@ public class Phase3UnitTests {
 
     //Join Game -
     @Test
+    @Order(12)
     @DisplayName("Join Game -")
     public void joinGameSameColor() throws ServiceException {
         String testToken = TokenUtils.generateToken();
@@ -227,6 +246,7 @@ public class Phase3UnitTests {
 
     //List Game +
     @Test
+    @Order(13)
     @DisplayName("List Game +")
     public void listGameSuccess() throws ServiceException {
         String testToken = TokenUtils.generateToken();
@@ -250,6 +270,7 @@ public class Phase3UnitTests {
 
     //List Game -
     @Test
+    @Order(14)
     @DisplayName("List Game -")
     public void listGameUnauthorized() throws ServiceException {
         String badAuthToken = TokenUtils.generateToken();
