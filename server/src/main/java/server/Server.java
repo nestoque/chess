@@ -5,7 +5,6 @@ import dataaccess.*;
 import handlers.*;
 import services.*;
 import io.javalin.*;
-import org.eclipse.jetty.util.log.Log;
 
 public class Server {
 
