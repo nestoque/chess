@@ -2,12 +2,10 @@ package handlers;
 
 import com.google.gson.Gson;
 import io.javalin.http.Context;
-import requests.CreateGameRequest;
 import requests.LoginRequest;
-import responses.CreateGameResult;
+
 import responses.LoginResult;
 import services.LoginService;
-import services.LogoutService;
 import services.ServiceException;
 
 import java.util.Map;

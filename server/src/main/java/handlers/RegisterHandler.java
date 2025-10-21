@@ -2,9 +2,7 @@ package handlers;
 
 import com.google.gson.Gson;
 import io.javalin.http.Context;
-import requests.LoginRequest;
 import requests.RegisterRequest;
-import responses.LoginResult;
 import responses.RegisterResult;
 import services.RegisterService;
 import services.ServiceException;

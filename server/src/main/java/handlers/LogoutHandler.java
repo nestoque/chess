@@ -2,8 +2,6 @@ package handlers;
 
 import com.google.gson.Gson;
 import io.javalin.http.Context;
-import requests.CreateGameRequest;
-import responses.CreateGameResult;
 import services.LogoutService;
 import services.ServiceException;
 
