@@ -10,6 +10,12 @@ import static dataaccess.DatabaseManager.getConnection;
 public class SQLAuthDAO implements AuthDAO {
     public SQLAuthDAO() {
         try {
+            DatabaseManager.createDatabase();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
             configureDatabase();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -30,27 +36,22 @@ public class SQLAuthDAO implements AuthDAO {
     }
 
     @Override
-    public boolean addAuth(AuthData myAuthData) throws SQLException {
+    public boolean addAuth(AuthData myAuthData) {
         try (var conn = getConnection()) {
 
 
-            try (var preparedStatement = conn.prepareStatement("INSERT INTO chess (authToken, useranme) VALUES(?, ?)")) {
+            try (var preparedStatement = conn.prepareStatement("INSERT INTO auth (authToken, username) VALUES(?, ?)")) {
                 preparedStatement.setString(1, myAuthData.authToken());
                 preparedStatement.setString(2, myAuthData.username());
 
                 preparedStatement.executeUpdate();
 
-                var resultSet = preparedStatement.getGeneratedKeys();
-                var authToken = myAuthData.authToken();
-                if (resultSet.next()) {
-                    if (resultSet.getString(authToken)) {
-                        return true;
-                    }
-                }
+                return true;
             }
-            return false;
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
+        } catch (SQLException e) {
+            return false;
         }
     }
 
@@ -68,11 +69,7 @@ public class SQLAuthDAO implements AuthDAO {
                     }
                 }
             }
-
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } catch (DataAccessException e) {
+        } catch (SQLException | DataAccessException e) {
             throw new RuntimeException(e);
         }
     }
@@ -80,11 +77,26 @@ public class SQLAuthDAO implements AuthDAO {
 
     @Override
     public void deleteAuth(String authToken) {
+        try (var conn = getConnection()) {
 
+            try (var preparedStatement = conn.prepareStatement("DELETE FROM auth WHERE id=?")) {
+                preparedStatement.setString(1, authToken);
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void clear() {
+        try (var conn = getConnection()) {
 
+            try (var preparedStatement = conn.prepareStatement("TRUNCATE auth")) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

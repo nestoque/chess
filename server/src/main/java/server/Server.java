@@ -15,7 +15,7 @@ public class Server {
         Gson json = new Gson();
         //Setup DAOs
         UserDAO userDAO = new MemoryUserDAO();
-        AuthDAO authDAO = new MemoryAuthDAO();
+        AuthDAO authDAO = new SQLAuthDAO();
         GameDAO gameDAO = new MemoryGameDAO();
         //Setup Services
         ClearService clearService = new ClearService(userDAO, authDAO, gameDAO);
