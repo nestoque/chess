@@ -1,6 +1,5 @@
 package dataaccess;
 
-import object.AuthData;
 import object.UserData;
 
 import java.sql.Connection;
@@ -10,7 +9,6 @@ import java.sql.SQLException;
 import static dataaccess.DatabaseManager.getConnection;
 
 public class SQLUserDAO implements UserDAO {
-    Object BCrypt;
 
     public SQLUserDAO() {
         try {
