@@ -84,12 +84,12 @@ public class Phase4UnitTests {
         assertNull(gameDAO.getGame(1), "games not cleared");
     }
 
-//    @Test
-//    @Order(2)
-//    @DisplayName("Clear Service Init")
-//    public void clearServiceSetup() {
-//        //need make new
-//    }
+    @Test
+    @Order(2)
+    @DisplayName("Clear Service Init")
+    public void clearServiceSetup() {
+        assertNotNull(clearService, "clearService is null");
+    }
 
     //Register +
     @Test
