@@ -52,13 +52,17 @@ public class Phase4UnitTests {
         listGamesService = new ListGameService(authDAO, gameDAO);
         createGameService = new CreateGameService(authDAO, gameDAO);
         joinGameService = new JoinGameService(authDAO, gameDAO);
+
+        userDAO.clear();
+        authDAO.clear();
+        gameDAO.clear();
     }
 
     @AfterEach
     public void clear() {
-        userDAO = new MemoryUserDAO();
-        authDAO = new MemoryAuthDAO();
-        gameDAO = new MemoryGameDAO();
+        userDAO.clear();
+        authDAO.clear();
+        gameDAO.clear();
     }
     // ### SERVICE UNIT TESTS ###
 
@@ -144,7 +148,8 @@ public class Phase4UnitTests {
     @Order(6)
     @DisplayName("Login -")
     public void loginWrongPassword() throws ServiceException {
-        UserData testUser = new UserData(username, BCrypt.hashpw("different password", BCrypt.gensalt()), email);
+        String encryptedDifferentPassword = BCrypt.hashpw("differentpassword", BCrypt.gensalt());
+        UserData testUser = new UserData(username, encryptedDifferentPassword, email);
         userDAO.addUser(testUser);
 
         LoginRequest newLoginReq = new LoginRequest(username, password);

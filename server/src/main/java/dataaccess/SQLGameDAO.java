@@ -58,10 +58,12 @@ public class SQLGameDAO implements GameDAO {
     public int addGame(GameData myGameData) {
         try (var conn = getConnection()) {
             try (var preparedStatement = conn.prepareStatement(
-                    "INSERT INTO game (gameName, game) VALUES(?, ?)"
+                    "INSERT INTO game (whiteUsername, blackUsername, gameName, game) VALUES(?,?,?,?)"
                     , RETURN_GENERATED_KEYS)) {
-                preparedStatement.setString(1, myGameData.gameName());
-                preparedStatement.setString(2,
+                preparedStatement.setString(1, myGameData.whiteUsername());
+                preparedStatement.setString(2, myGameData.blackUsername());
+                preparedStatement.setString(3, myGameData.gameName());
+                preparedStatement.setString(4,
                         myGson.toJson(myGameData.game()));
 
                 preparedStatement.executeUpdate();
