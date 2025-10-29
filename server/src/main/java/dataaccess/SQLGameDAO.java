@@ -1,19 +1,18 @@
 package dataaccess;
 
 import chess.ChessGame;
-import chess.ChessPiece;
+
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializer;
+
 import object.GameData;
-import object.UserData;
+
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+
 
 import static dataaccess.DatabaseManager.getConnection;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
