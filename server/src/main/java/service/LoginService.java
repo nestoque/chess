@@ -4,6 +4,7 @@ import dataaccess.AuthDAO;
 import dataaccess.UserDAO;
 import object.AuthData;
 import object.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 import requests.LoginRequest;
 import responses.LoginResult;
 import utils.TokenUtils;
@@ -32,7 +33,7 @@ public class LoginService {
         }
 
         //Wrong password
-        if (!Objects.equals(user.password(), req.password())) {
+        if (!BCrypt.checkpw(req.password(), user.password())) {
             throw new ServiceException(401, "unauthorized");
         }
 

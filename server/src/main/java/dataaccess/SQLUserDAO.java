@@ -10,6 +10,8 @@ import java.sql.SQLException;
 import static dataaccess.DatabaseManager.getConnection;
 
 public class SQLUserDAO implements UserDAO {
+    Object BCrypt;
+
     public SQLUserDAO() {
         try {
             DatabaseManager.createDatabase();
@@ -47,7 +49,8 @@ public class SQLUserDAO implements UserDAO {
 
             try (var preparedStatement = conn.prepareStatement("INSERT INTO user (username, password, email) VALUES(?, ?, ?)")) {
                 preparedStatement.setString(1, myUserData.username());
-                preparedStatement.setString(2, myUserData.password());
+
+                preparedStatement.setString(2, myUserData.password());// needs to be encrypted
                 preparedStatement.setString(3, myUserData.email());
 
                 preparedStatement.executeUpdate();
@@ -64,7 +67,7 @@ public class SQLUserDAO implements UserDAO {
     @Override
     public UserData getUser(String username) {
         try (var conn = getConnection()) {
-            try (var preparedStatement = conn.prepareStatement("SELECT username, password, email type FROM username WHERE type=?")) {
+            try (var preparedStatement = conn.prepareStatement("SELECT username, password, email FROM user WHERE username=?")) {
                 preparedStatement.setString(1, username);
                 try (var rs = preparedStatement.executeQuery()) {
                     if (rs.next()) {

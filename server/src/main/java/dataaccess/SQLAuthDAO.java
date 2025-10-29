@@ -58,7 +58,7 @@ public class SQLAuthDAO implements AuthDAO {
     @Override
     public AuthData getAuth(String authToken) {
         try (var conn = getConnection()) {
-            try (var preparedStatement = conn.prepareStatement("SELECT authToken, username, type FROM auth WHERE type=?")) {
+            try (var preparedStatement = conn.prepareStatement("SELECT authToken, username FROM auth WHERE authToken=?")) {
                 preparedStatement.setString(1, authToken);
                 try (var rs = preparedStatement.executeQuery()) {
                     if (rs.next()) {
@@ -79,7 +79,7 @@ public class SQLAuthDAO implements AuthDAO {
     public void deleteAuth(String authToken) {
         try (var conn = getConnection()) {
 
-            try (var preparedStatement = conn.prepareStatement("DELETE FROM auth WHERE id=?")) {
+            try (var preparedStatement = conn.prepareStatement("DELETE FROM auth WHERE authToken=?")) {
                 preparedStatement.setString(1, authToken);
                 preparedStatement.executeUpdate();
             }

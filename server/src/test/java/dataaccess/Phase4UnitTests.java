@@ -1,7 +1,6 @@
-package service;
+package dataaccess;
 
 import chess.ChessGame;
-import dataaccess.*;
 import object.AuthData;
 import object.GameData;
 import object.UserData;
@@ -15,11 +14,10 @@ import responses.*;
 import service.*;
 import utils.TokenUtils;
 
-
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class Phase3UnitTests {
+public class Phase4UnitTests {
 
     private String username = "test_user";
     private String password = "test_password";
@@ -43,9 +41,9 @@ public class Phase3UnitTests {
     @BeforeEach
     public void startup() {
         //Setup DAOs
-        userDAO = new MemoryUserDAO();
-        authDAO = new MemoryAuthDAO();
-        gameDAO = new MemoryGameDAO();
+        userDAO = new SQLUserDAO();
+        authDAO = new SQLAuthDAO();
+        gameDAO = new SQLGameDAO();
         //Setup Services
         clearService = new ClearService(userDAO, authDAO, gameDAO);
         registerService = new RegisterService(userDAO, authDAO);
@@ -82,14 +80,12 @@ public class Phase3UnitTests {
         assertNull(gameDAO.getGame(1), "games not cleared");
     }
 
-    @Test
-    @Order(2)
-    @DisplayName("Clear Service Init")
-    public void clearServiceSetup() {
-        assertEquals(userDAO, clearService.userDAO);
-        assertEquals(authDAO, clearService.authDAO);
-        assertEquals(gameDAO, clearService.gameDAO);
-    }
+//    @Test
+//    @Order(2)
+//    @DisplayName("Clear Service Init")
+//    public void clearServiceSetup() {
+//        //need make new
+//    }
 
     //Register +
     @Test

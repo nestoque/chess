@@ -7,6 +7,7 @@ import object.UserData;
 import requests.RegisterRequest;
 import responses.RegisterResult;
 import utils.TokenUtils;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class RegisterService {
     UserDAO userDAO;
@@ -26,7 +27,7 @@ public class RegisterService {
         }
 
         //Add if new
-        UserData newUser = new UserData(req.username(), req.password(), req.email());
+        UserData newUser = new UserData(req.username(), BCrypt.hashpw(req.password(), BCrypt.gensalt()), req.email());
 
         if (!userDAO.addUser(newUser)) {
             throw new ServiceException(403, "already taken");
