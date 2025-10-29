@@ -74,55 +74,6 @@ public class DatabaseManager {
         var port = Integer.parseInt(props.getProperty("db.port"));
         connectionUrl = String.format("jdbc:mysql://%s:%d", host, port);
     }
-
-    void configureDatabase() throws SQLException {
-        try (var conn = getConnection()) {
-            var createDbStatement = conn.prepareStatement("CREATE DATABASE IF NOT EXISTS chess");
-            createDbStatement.executeUpdate();
-
-            conn.setCatalog("chess");
-
-            var createAuthTable = """
-                    CREATE TABLE  IF NOT EXISTS auth (
-                        authToken VARCHAR(255) NOT NULL,
-                        username type VARCHAR(255) NOT NULL,
-                        PRIMARY KEY (authToken)
-                    )""";
-
-            try (var createTableStatement = conn.prepareStatement(createAuthTable)) {
-                createTableStatement.executeUpdate();
-            }
-
-            var createUserTable = """
-                    CREATE TABLE  IF NOT EXISTS user (
-                        username VARCHAR(255) NOT NULL,
-                        password VARCHAR(255) NOT NULL,
-                        email VARCHAR(255) NOT NULL,
-                        PRIMARY KEY (username)
-                    )""";
-
-            try (var createTableStatement = conn.prepareStatement(createUserTable)) {
-                createTableStatement.executeUpdate();
-            }
-
-            var createGameTable = """
-                    CREATE TABLE  IF NOT EXISTS game (
-                        gameID INT NOT NULL AUTO_INCREMENT,
-                        whiteUsername VARCHAR(255),
-                        blackUsername VARCHAR(255),
-                        gameName VARCHAR(255) NOT NULL,
-                        game longtext NOT NULL,
-                        PRIMARY KEY (gameID)
-                    )""";
-
-            try (var createTableStatement = conn.prepareStatement(createGameTable)) {
-                createTableStatement.executeUpdate();
-            }
-
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }
 
 
