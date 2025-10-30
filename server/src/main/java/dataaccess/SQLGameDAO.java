@@ -63,7 +63,7 @@ public class SQLGameDAO implements GameDAO {
                 preparedStatement.setString(2, myGameData.blackUsername());
                 preparedStatement.setString(3, myGameData.gameName());
                 preparedStatement.setString(4,
-                        myGson.toJson(myGameData.game()));
+                        myGson.toJson(myGameData.game(), ChessGame.class));
 
                 preparedStatement.executeUpdate();
 

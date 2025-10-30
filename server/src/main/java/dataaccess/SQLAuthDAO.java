@@ -8,6 +8,8 @@ import java.sql.*;
 import static dataaccess.DatabaseManager.getConnection;
 
 public class SQLAuthDAO implements AuthDAO {
+    private final static String UUIDREGEX = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$";
+
     public SQLAuthDAO() {
         try {
             DatabaseManager.createDatabase();
@@ -78,10 +80,13 @@ public class SQLAuthDAO implements AuthDAO {
     @Override
     public void deleteAuth(String authToken) {
         try (var conn = getConnection()) {
-
-            try (var preparedStatement = conn.prepareStatement("DELETE FROM auth WHERE authToken=?")) {
-                preparedStatement.setString(1, authToken);
-                preparedStatement.executeUpdate();
+            if (authToken.matches(SQLAuthDAO.UUIDREGEX)) {
+                try (var preparedStatement = conn.prepareStatement("DELETE FROM auth WHERE authToken=?")) {
+                    preparedStatement.setString(1, authToken);
+                    preparedStatement.executeUpdate();
+                }
+            } else {
+                throw new RuntimeException("not valid UUID");
             }
         } catch (SQLException | DataAccessException e) {
             throw new RuntimeException(e);

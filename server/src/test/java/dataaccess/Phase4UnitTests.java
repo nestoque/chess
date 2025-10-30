@@ -1,9 +1,13 @@
 package dataaccess;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
+import chess.InvalidMoveException;
 import object.AuthData;
 import object.GameData;
 import object.UserData;
+import org.eclipse.jetty.http.HttpTokens;
 import org.junit.jupiter.api.*;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -12,6 +16,9 @@ import service.*;
 import utils.TokenUtils;
 
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -71,7 +78,7 @@ public class Phase4UnitTests {
     @Test
     @Order(3)
     @DisplayName("getAuth +")
-    public void getAuthSuccess() throws ServiceException {
+    public void getAuthSuccess() {
         authDAO.addAuth(new AuthData(testToken, username));
         assertNotNull(authDAO.getAuth(testToken));
     }
@@ -80,7 +87,7 @@ public class Phase4UnitTests {
     @Test
     @Order(4)
     @DisplayName("getAuth -")
-    public void getAuthFail() throws ServiceException {
+    public void getAuthFail() {
         authDAO.addAuth(new AuthData(testToken, username));
         assertNull(authDAO.getAuth("othertoken"));
     }
@@ -89,7 +96,7 @@ public class Phase4UnitTests {
     @Test
     @Order(5)
     @DisplayName("deleteAuth +")
-    public void deleteAuthSuccess() throws ServiceException {
+    public void deleteAuthSuccess() {
         authDAO.addAuth(new AuthData(testToken, username));
         authDAO.deleteAuth(testToken);
         assertNull(authDAO.getAuth(testToken));
@@ -98,84 +105,99 @@ public class Phase4UnitTests {
 
     @Test
     @Order(6)
-    @DisplayName("deleteAuth -")
-    public void deleteAuthFail() throws ServiceException {
+    @DisplayName("deleteAuth -") //another idea is deleting the wrong one make sure the og one still there.
+    public void deleteAuthFail() {
         authDAO.addAuth(new AuthData(testToken, username));
-
-        SQLException exception = exception = assertThrows(
-                SQLException.class, () -> authDAO.deleteAuth("othertoken"), "Didn't throw exception");
+        String newToken = TokenUtils.generateToken();
+        authDAO.deleteAuth(newToken);
+        ;
+        assertNotNull(authDAO.getAuth(testToken));
     }
 
 
     @Order(7)
     @DisplayName("authClear")
-    public void authClearSuccess() throws ServiceException {
-
+    public void authClearSuccess() {
+        authDAO.addAuth(new AuthData(testToken, username));
+        authDAO.clear();
+        assertNull(authDAO.getAuth(testToken));
     }
 
 
     @Test
     @Order(8)
     @DisplayName("addUser +")
-    public void addUserSuccess() throws ServiceException {
-
+    public void addUserSuccess() {
+        assertTrue(userDAO.addUser(new UserData(username, password, email)));
     }
 
 
     @Test
     @Order(9)
     @DisplayName("addUser -")
-    public void addUserFail() throws ServiceException {
-
+    public void addUserFail() {
+        UserData testUser = new UserData(username, password, email);
+        userDAO.addUser(testUser);
+        assertFalse(userDAO.addUser(testUser), "addAuth didn't return false on repeated user");
     }
 
 
     @Test
     @Order(10)
     @DisplayName("getUser +")
-    public void getUserSuccess() throws ServiceException {
-
+    public void getUserSuccess() {
+        userDAO.addUser(new UserData(username, password, email));
+        assertNotNull(userDAO.getUser(username));
     }
 
 
     @Test
     @Order(11)
     @DisplayName("getUser -")
-    public void getUserFail() throws ServiceException {
-
-
+    public void getUserFail() {
+        userDAO.addUser(new UserData(username, password, email));
+        assertNull(userDAO.getUser("otheruser"));
     }
 
 
     @Test
     @Order(12)
     @DisplayName("clearUser")
-    public void clearUserSuccess() throws ServiceException {
-
+    public void clearUserSuccess() {
+        userDAO.addUser(new UserData(username, password, email));
+        userDAO.clear();
+        assertNull(userDAO.getUser("otheruser"));
     }
 
 
     @Test
     @Order(13)
     @DisplayName("addGame +")
-    public void addGameSuccess() throws ServiceException {
-
-
+    public void addGameSuccess() {
+        assertEquals(1, gameDAO.addGame(new GameData(1, null, null, gameName,
+                new ChessGame())));
+        assertEquals(2, gameDAO.addGame(new GameData(1, null, null, gameName,
+                new ChessGame())));
     }
 
 
     @Test
     @Order(14)
     @DisplayName("addGame -")
-    public void addGameFail() throws ServiceException {
-
+    public void addGameFail() {
+        //give not null a null
+        assertThrows(
+                RuntimeException.class, () -> gameDAO.addGame(new GameData(47, null, null,
+                        null, new ChessGame())), "Didn't throw exception");
     }
 
     @Test
     @Order(15)
     @DisplayName("getGame +")
-    public void getGameSuccess() throws ServiceException {
-
+    public void getGameSuccess() {
+        int gameID = gameDAO.addGame(new GameData(0, null, null,
+                gameName, new ChessGame()));
+        assertNotNull(gameDAO.getGame(gameID));
 
     }
 
@@ -183,31 +205,53 @@ public class Phase4UnitTests {
     @Test
     @Order(16)
     @DisplayName("getGame -")
-    public void getGameFail() throws ServiceException {
-
+    public void getGameFail() {
+        //needs to be fixed
+        int gameID = gameDAO.addGame(new GameData(47, null, null,
+                gameName, new ChessGame()));
+        assertNull(gameDAO.getGame(gameID));
     }
 
     @Test
     @Order(17)
     @DisplayName("listGame +")
-    public void listGameSuccess() throws ServiceException {
-
-
+    public void listGameSuccess() {
+        int game1 = gameDAO.addGame(new GameData(47, null, null,
+                gameName, new ChessGame()));
+        int game2 = gameDAO.addGame(new GameData(47, null, null,
+                gameName, new ChessGame()));
+        int game3 = gameDAO.addGame(new GameData(47, null, null,
+                gameName, new ChessGame()));
+        assertNotEquals(Map.of(), gameDAO.listGame(), "list is empty");
+        assertEquals(3, gameDAO.listGame().size(), "list is empty");
     }
 
 
     @Test
     @Order(18)
     @DisplayName("listGame -")
-    public void listGameFail() throws ServiceException {
-
+    public void listGameFail() {
+        //howto have neg case?
+        assertEquals(List.of(), gameDAO.listGame(), "list is empty");
+        assertEquals(0, gameDAO.listGame().size(), "list is empty");
     }
 
     @Test
     @Order(17)
     @DisplayName("updateGame +")
-    public void updateGameSuccess() throws ServiceException {
-
+    public void updateGameSuccess() throws InvalidMoveException {
+        //Test with moves and playerturns and stuff5
+        int game1 = gameDAO.addGame(new GameData(47, null, null,
+                gameName, new ChessGame()));
+        GameData myGameData = gameDAO.getGame(game1);
+        String oldGameString = myGameData.game().getBoard().toString();
+        ChessGame.TeamColor oldGameTurn = myGameData.game().getTeamTurn();
+        myGameData.game().makeMove(
+                new ChessMove(new ChessPosition(2, 1), new ChessPosition(3, 1), null));
+        gameDAO.updateGame(myGameData);
+        assertNotNull(gameDAO.getGame(game1), "Game wasn't added");
+        assertNotEquals(oldGameString, gameDAO.getGame(game1).game().getBoard().toString());
+        assertNotEquals(oldGameTurn, gameDAO.getGame(game1).game().getTeamTurn());
 
     }
 
@@ -215,14 +259,29 @@ public class Phase4UnitTests {
     @Test
     @Order(18)
     @DisplayName("updateGame -")
-    public void updateGameFail() throws ServiceException {
+    public void updateGameFail() {
+        int game1 = gameDAO.addGame(new GameData(47, null, null,
+                gameName, new ChessGame()));
+        GameData myGameData = new GameData(game1, null, null, null, nullgit);
+
+        assertThrows(
+                RuntimeException.class, () -> gameDAO.updateGame(myGameData), "Didn't throw exception");
 
     }
 
     @Test
     @Order(19)
     @DisplayName("clearGame ")
-    public void clearGameSuccess() throws ServiceException {
+    public void clearGameSuccess() {
+        int game1 = gameDAO.addGame(new GameData(47, null, null,
+                gameName, new ChessGame()));
+        int game2 = gameDAO.addGame(new GameData(47, null, null,
+                gameName, new ChessGame()));
+        int game3 = gameDAO.addGame(new GameData(47, null, null,
+                gameName, new ChessGame()));
+        gameDAO.clear();
 
+        assertEquals(List.of(), gameDAO.listGame(), "list is empty");
+        assertNotEquals(3, gameDAO.listGame().size(), "list is empty");
     }
 }

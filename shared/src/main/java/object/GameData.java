@@ -17,4 +17,7 @@ public record GameData(
         return new GameData(gameID, whiteUsername, username, gameName, game);
     }
 
+    public GameData setGameID(int newGameID) {
+        return new GameData(newGameID, whiteUsername, blackUsername, gameName, game);
+    }
 }
