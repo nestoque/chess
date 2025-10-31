@@ -15,7 +15,11 @@ public class DatabaseManager {
     static {
         loadPropertiesFromResources();
 
-        createDatabase();
+        try {
+            createDatabase();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
 
         String createAuthTableSQL = """
                 CREATE TABLE IF NOT EXISTS auth (
