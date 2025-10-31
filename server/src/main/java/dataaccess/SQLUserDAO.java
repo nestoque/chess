@@ -10,35 +10,6 @@ import static dataaccess.DatabaseManager.getConnection;
 
 public class SQLUserDAO implements UserDAO {
 
-    public SQLUserDAO() {
-        try {
-            DatabaseManager.createDatabase();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
-            configureDatabase();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void configureDatabase() {
-        String createTableSQL = """
-                CREATE TABLE  IF NOT EXISTS user (
-                    username VARCHAR(255) NOT NULL,
-                    password VARCHAR(255) NOT NULL,
-                    email VARCHAR(255) NOT NULL,
-                    PRIMARY KEY (username)
-                )""";
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(createTableSQL)) {
-            ps.executeUpdate();
-        } catch (SQLException | DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     @Override
     public boolean addUser(UserData myUserData) {

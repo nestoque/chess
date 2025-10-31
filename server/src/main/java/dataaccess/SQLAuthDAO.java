@@ -9,33 +9,7 @@ import static dataaccess.DatabaseManager.getConnection;
 
 public class SQLAuthDAO implements AuthDAO {
     private final static String UUIDREGEX = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$";
-
-    public SQLAuthDAO() {
-        try {
-            DatabaseManager.createDatabase();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
-            configureDatabase();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void configureDatabase() throws Exception {
-        String createTableSQL = """
-                CREATE TABLE IF NOT EXISTS auth (
-                    authToken VARCHAR(255) NOT NULL PRIMARY KEY,
-                    username VARCHAR(255) NOT NULL
-                );
-                """;
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(createTableSQL)) {
-            ps.executeUpdate();
-        }
-    }
+    
 
     @Override
     public boolean addAuth(AuthData myAuthData) {

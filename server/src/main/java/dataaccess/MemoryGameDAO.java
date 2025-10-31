@@ -12,9 +12,6 @@ public class MemoryGameDAO implements GameDAO {
 
     @Override
     public int addGame(GameData myGameData) {
-        if (myGameData.gameID() != 0) {
-            return -1;
-        }
         GameData numberedGame = myGameData.setGameID(nextGameID);
         return (gameHashMap.putIfAbsent(nextGameID++, numberedGame) == null) ? numberedGame.gameID() : -1;
     }

@@ -18,39 +18,7 @@ import static dataaccess.DatabaseManager.getConnection;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 
 public class SQLGameDAO implements GameDAO {
-    private static final Gson myGson = new Gson();
-
-    public SQLGameDAO() {
-        try {
-            DatabaseManager.createDatabase();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
-            configureDatabase();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void configureDatabase() {
-        String createTableSQL = """
-                CREATE TABLE  IF NOT EXISTS game (
-                    gameID INT NOT NULL AUTO_INCREMENT,
-                    whiteUsername VARCHAR(255),
-                    blackUsername VARCHAR(255),
-                    gameName VARCHAR(255) NOT NULL,
-                    game longtext NOT NULL,
-                    PRIMARY KEY (gameID)
-                )""";
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(createTableSQL)) {
-            ps.executeUpdate();
-        } catch (SQLException | DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private static final Gson MY_GSON = new Gson();
 
 
     @Override
@@ -63,17 +31,17 @@ public class SQLGameDAO implements GameDAO {
                 preparedStatement.setString(2, myGameData.blackUsername());
                 preparedStatement.setString(3, myGameData.gameName());
                 preparedStatement.setString(4,
-                        myGson.toJson(myGameData.game(), ChessGame.class));
+                        MY_GSON.toJson(myGameData.game(), ChessGame.class));
 
                 preparedStatement.executeUpdate();
 
                 var resultSet = preparedStatement.getGeneratedKeys();
-                var ID = 0;
+                var gameID = 0;
                 if (resultSet.next()) {
-                    ID = resultSet.getInt(1);
+                    gameID = resultSet.getInt(1);
                 }
 
-                return ID;
+                return gameID;
             }
         } catch (SQLException | DataAccessException e) {
             throw new RuntimeException(e);
@@ -93,7 +61,7 @@ public class SQLGameDAO implements GameDAO {
                                 rs.getString("whiteUsername"),
                                 rs.getString("blackUsername"),
                                 rs.getString("gameName"),
-                                myGson.fromJson(rs.getString("game"), ChessGame.class)
+                                MY_GSON.fromJson(rs.getString("game"), ChessGame.class)
 
                         );
                     } else {
@@ -120,7 +88,7 @@ public class SQLGameDAO implements GameDAO {
                                 rs.getString("whiteUsername"),
                                 rs.getString("blackUsername"),
                                 rs.getString("gameName"),
-                                myGson.fromJson(rs.getString("game"), ChessGame.class)));
+                                MY_GSON.fromJson(rs.getString("game"), ChessGame.class)));
                     }
                 }
             }
@@ -136,7 +104,7 @@ public class SQLGameDAO implements GameDAO {
             try (var preparedStatement = conn.prepareStatement("UPDATE game SET whiteUsername = ?, blackUsername = ?, game = ? WHERE gameID=?")) {
                 preparedStatement.setString(1, myGameData.whiteUsername());
                 preparedStatement.setString(2, myGameData.blackUsername());
-                preparedStatement.setString(3, myGson.toJson(myGameData.game(), ChessGame.class));
+                preparedStatement.setString(3, MY_GSON.toJson(myGameData.game(), ChessGame.class));
                 preparedStatement.setInt(4, myGameData.gameID());
 
                 preparedStatement.executeUpdate();

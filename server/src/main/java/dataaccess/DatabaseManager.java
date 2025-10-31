@@ -14,6 +14,46 @@ public class DatabaseManager {
      */
     static {
         loadPropertiesFromResources();
+
+        String createAuthTableSQL = """
+                CREATE TABLE IF NOT EXISTS auth (
+                    authToken VARCHAR(255) NOT NULL PRIMARY KEY,
+                    username VARCHAR(255) NOT NULL
+                );
+                """;
+
+        String createUserTableSQL = """
+                CREATE TABLE  IF NOT EXISTS user (
+                    username VARCHAR(255) NOT NULL,
+                    password VARCHAR(255) NOT NULL,
+                    email VARCHAR(255) NOT NULL,
+                    PRIMARY KEY (username)
+                )""";
+
+        String createGameTableSQL = """
+                CREATE TABLE  IF NOT EXISTS game (
+                    gameID INT NOT NULL AUTO_INCREMENT,
+                    whiteUsername VARCHAR(255),
+                    blackUsername VARCHAR(255),
+                    gameName VARCHAR(255) NOT NULL,
+                    game longtext NOT NULL,
+                    PRIMARY KEY (gameID)
+                )""";
+
+
+        try (Connection conn = getConnection()) {
+            try (PreparedStatement ps = conn.prepareStatement(createAuthTableSQL)) {
+                ps.executeUpdate();
+            }
+            try (PreparedStatement ps = conn.prepareStatement(createUserTableSQL)) {
+                ps.executeUpdate();
+            }
+            try (PreparedStatement ps = conn.prepareStatement(createGameTableSQL)) {
+                ps.executeUpdate();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize database: " + e.getMessage(), e);
+        }
     }
 
     /**

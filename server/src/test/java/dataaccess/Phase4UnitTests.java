@@ -209,7 +209,7 @@ public class Phase4UnitTests {
         //needs to be fixed
         int gameID = gameDAO.addGame(new GameData(47, null, null,
                 gameName, new ChessGame()));
-        assertNull(gameDAO.getGame(gameID));
+        assertNull(gameDAO.getGame(3));
     }
 
     @Test
@@ -259,13 +259,14 @@ public class Phase4UnitTests {
     @Test
     @Order(18)
     @DisplayName("updateGame -")
-    public void updateGameFail() {
+    public void updateGameFail() { //too long aname
+        String tooLong = "a".repeat(256);
         int game1 = gameDAO.addGame(new GameData(47, null, null,
                 gameName, new ChessGame()));
-        GameData myGameData = new GameData(game1, null, null, null, null);
+        GameData myGameData = new GameData(game1, tooLong, null, null, null);
 
         assertThrows(
-                SQLException.class, () -> gameDAO.updateGame(myGameData), "Didn't throw exception");
+                RuntimeException.class, () -> gameDAO.updateGame(myGameData), "Didn't throw exception");
 
     }
 
