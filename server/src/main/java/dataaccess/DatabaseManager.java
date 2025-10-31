@@ -15,6 +15,8 @@ public class DatabaseManager {
     static {
         loadPropertiesFromResources();
 
+        createDatabase();
+
         String createAuthTableSQL = """
                 CREATE TABLE IF NOT EXISTS auth (
                     authToken VARCHAR(255) NOT NULL PRIMARY KEY,
