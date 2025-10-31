@@ -61,14 +61,14 @@ public class Phase4UnitTests {
     @Test
     @Order(1)
     @DisplayName("AddAuth +")
-    public void AddAuthSuccess() {
+    public void addAuthSuccess() {
         assertTrue(authDAO.addAuth(new AuthData(testToken, username)));
     }
 
     @Test
     @Order(2)
     @DisplayName("AddAuth -")
-    public void AddAuthFail() {
+    public void addAuthFail() {
         AuthData testUser = new AuthData(testToken, username);
         authDAO.addAuth(testUser);
         assertFalse(authDAO.addAuth(new AuthData(testToken, username)), "addAuth didn't return false on repeated user");
@@ -114,7 +114,7 @@ public class Phase4UnitTests {
         assertNotNull(authDAO.getAuth(testToken));
     }
 
-
+    @Test
     @Order(7)
     @DisplayName("authClear")
     public void authClearSuccess() {
