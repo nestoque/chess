@@ -262,10 +262,10 @@ public class Phase4UnitTests {
     public void updateGameFail() {
         int game1 = gameDAO.addGame(new GameData(47, null, null,
                 gameName, new ChessGame()));
-        GameData myGameData = new GameData(game1, null, null, null, nullgit);
+        GameData myGameData = new GameData(game1, null, null, null, null);
 
         assertThrows(
-                RuntimeException.class, () -> gameDAO.updateGame(myGameData), "Didn't throw exception");
+                SQLException.class, () -> gameDAO.updateGame(myGameData), "Didn't throw exception");
 
     }
 
