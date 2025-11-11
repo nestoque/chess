@@ -2,6 +2,7 @@ package serverfacade;
 
 import com.google.gson.Gson;
 import exception.ResponseException;
+import object.AuthData;
 import requests.*;
 import responses.*;
 
@@ -18,55 +19,57 @@ public class ServerFacade {
         serverUrl = url;
     }
 
-    public RegisterResult register(RegisterRequest request) throws ResponseException {
-        var request = buildRequest("POST", "/pet", pet);
+    public RegisterResult register(RegisterRequest req) throws ResponseException {
+        var request = buildRequest("POST", "/user", req, null);
         var response = sendRequest(request);
-        return handleResponse(response, Pet.class);
+        return handleResponse(response, RegisterResult.class);
     }
 
-    public LoginResult login(LoginRequest request) throws ResponseException {
-        var path = String.format("/pet/%s", id);
-        var request = buildRequest("DELETE", path, null);
+    public LoginResult login(LoginRequest req) throws ResponseException {
+        var request = buildRequest("POST", "/session", req, null);
         var response = sendRequest(request);
-        handleResponse(response, null);
+        return handleResponse(response, LoginResult.class);
     }
 
     public void logout(String authToken) throws ResponseException {
-        var request = buildRequest("GET", "/pet", null);
-        var response = sendRequest(request);
-        return handleResponse(response, PetList.class);
+        var request = buildRequest("DELETE", "/session", null, authToken);
+        sendRequest(request);
+
     }
 
     public CreateGameResult createGame(String authToken, CreateGameRequest req) throws ResponseException {
-        var path = String.format("/pet/%s", id);
-        var request = buildRequest("DELETE", path, null);
+        var request = buildRequest("post", "/session", req, authToken);
         var response = sendRequest(request);
-        handleResponse(response, null);
+        return handleResponse(response, null);
     }
 
     public void joinGame(String authToken, JoinGameRequest req) throws ResponseException {
-        var request = buildRequest("DELETE", "/pet", req);
+        var request = buildRequest("post", "/session", req, authToken);
         sendRequest(request);
     }
 
 
     public ListGamesResult listGames(String authToken) throws ResponseException {
-        var request = buildRequest("GET", "/game", authToken);
+        var request = buildRequest("GET", "/game", null, authToken);
         var response = sendRequest(request);
         return handleResponse(response, ListGamesResult.class);
     }
 
     public void clear() throws ResponseException {
-        var request = buildRequest("DELETE", "/db", null);
+        var request = buildRequest("DELETE", "/db", null, null);
         var response = sendRequest(request);
     }
 
-    private HttpRequest buildRequest(String method, String path, Object body) {
+    private HttpRequest buildRequest(String method, String path, Object body, String authToken) {
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + path))
                 .method(method, makeRequestBody(body));
         if (body != null) {
             request.setHeader("Content-Type", "application/json");
+        }
+
+        if (authToken != null) {
+            request.header("Authorization", authToken);
         }
         return request.build();
     }
