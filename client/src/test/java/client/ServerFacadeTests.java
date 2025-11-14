@@ -79,7 +79,6 @@ public class ServerFacadeTests {
         CreateGameResult gameRes = facade.createGame(res.authToken(), CREATE_GAME_REQ);
 
         facade.clear();
-//        \assertThrows(ResponseException.class, () -> facade.logout(res.authToken()), "Didn't throw exception"); //401 unauthorized
         assertThrows(ResponseException.class, () -> facade.login(LOGIN_REQ), "Didn't throw exception");
     }
 
