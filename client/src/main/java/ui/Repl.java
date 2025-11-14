@@ -2,6 +2,7 @@ package client;
 
 
 import exception.ResponseException;
+import serverfacade.ServerFacade;
 import ui.GameClient;
 import ui.PostLoginClient;
 import ui.PreLoginClient;
@@ -19,33 +20,26 @@ public class Repl {
     private ReplResult currentResult;
 
     public Repl(String serverUrl) throws ResponseException {
-        preClient = new PreLoginClient(serverUrl);
-        postClient = new PostLoginClient(serverUrl, preClient);
-        gameClient = new GameClient(serverUrl, preClient, postClient);
+        ServerFacade server = new ServerFacade(serverUrl);
+        preClient = new PreLoginClient(server);
+        postClient = new PostLoginClient(server, preClient);
+        gameClient = new GameClient(server, preClient, postClient);
         currentResult = new ReplResult("h", ReplResult.State.PRELOGIN);
     }
 
     public void run() {
         Scanner scanner = new Scanner(System.in);
+        System.out.print(SET_TEXT_COLOR_BLUE + preClient.help().message() + RESET_TEXT_COLOR);
         while (!currentResult.message().equals("quit")) {
             printPrompt();
             String line = scanner.nextLine();
             try {
-                switch (currentResult.currentState()) {
-                    case PRELOGIN -> {
-                        currentResult = preClient.eval(line);
-                    }
-                    case POSTLOGIN -> {
-                        currentResult = postClient.eval(line);
-                    }
-                    case GAME -> {
-                        currentResult = gameClient.eval(line);
-                    }
-                    default -> {
-                        throw new ResponseException(ResponseException.Code.ClientError, "unsupported client state");
-                    }
-                }
+                ReplResult oldResult = currentResult;
+                currentResult = getResult(currentResult, line);
                 System.out.print(SET_TEXT_COLOR_BLUE + currentResult.message());
+                if (oldResult.currentState() != currentResult.currentState()) {
+                    System.out.print(SET_TEXT_COLOR_BLUE + getResult(currentResult, "h").message());
+                }
             } catch (Throwable e) {
                 System.out.print(e.getMessage());
             }
@@ -56,6 +50,17 @@ public class Repl {
 
     private void printPrompt() {
         System.out.print("\n" + RESET_BG_COLOR + ">>> " + SET_TEXT_COLOR_GREEN);
+    }
+
+    private ReplResult getResult(ReplResult lastResult, String line) throws ResponseException {
+        return switch (currentResult.currentState()) {
+            case PRELOGIN -> preClient.eval(line);
+            case POSTLOGIN -> currentResult = postClient.eval(line);
+            case GAME -> currentResult = gameClient.eval(line);
+            default -> {
+                throw new ResponseException(ResponseException.Code.ClientError, "unsupported client state");
+            }
+        };
     }
 
 }

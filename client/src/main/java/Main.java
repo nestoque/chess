@@ -1,6 +1,5 @@
 import chess.*;
 import client.Repl;
-import ui.PreLoginClient;
 
 public class Main {
     public static void main(String[] args) {
