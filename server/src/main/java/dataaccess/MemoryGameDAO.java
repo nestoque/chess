@@ -27,8 +27,8 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
-    public void updateGame(GameData myGameData) {
-        gameHashMap.put(myGameData.gameID(), myGameData); //replaces
+    public boolean updateGame(GameData myGameData) {
+        return gameHashMap.replace(myGameData.gameID(), myGameData) != null; //replaces
     }
 
     @Override

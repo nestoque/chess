@@ -99,7 +99,7 @@ public class SQLGameDAO implements GameDAO {
     }
 
     @Override
-    public void updateGame(GameData myGameData) {
+    public boolean updateGame(GameData myGameData) {
         try (var conn = getConnection()) {
             try (var preparedStatement = conn.prepareStatement("UPDATE game SET whiteUsername = ?, blackUsername = ?, game = ? WHERE gameID=?")) {
                 preparedStatement.setString(1, myGameData.whiteUsername());
@@ -107,7 +107,7 @@ public class SQLGameDAO implements GameDAO {
                 preparedStatement.setString(3, MY_GSON.toJson(myGameData.game(), ChessGame.class));
                 preparedStatement.setInt(4, myGameData.gameID());
 
-                preparedStatement.executeUpdate();
+                return preparedStatement.executeUpdate() == 1;
             }
         } catch (SQLException | DataAccessException e) {
             throw new RuntimeException(e);

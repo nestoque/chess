@@ -32,19 +32,19 @@ public class ServerFacade {
     }
 
     public void logout(String authToken) throws ResponseException {
-        var request = buildRequest("DELETE", "/session/", null, authToken);
+        var request = buildRequest("DELETE", "/session", null, authToken);
         sendRequest(request);
 
     }
 
     public CreateGameResult createGame(String authToken, CreateGameRequest req) throws ResponseException {
-        var request = buildRequest("post", "/session", req, authToken);
+        var request = buildRequest("POST", "/game", req, authToken);
         var response = sendRequest(request);
-        return handleResponse(response, null);
+        return handleResponse(response, CreateGameResult.class);
     }
 
     public void joinGame(String authToken, JoinGameRequest req) throws ResponseException {
-        var request = buildRequest("post", "/session", req, authToken);
+        var request = buildRequest("POST", "/game", req, authToken);
         sendRequest(request);
     }
 
@@ -95,7 +95,7 @@ public class ServerFacade {
         if (!isSuccessful(status)) {
             var body = response.body();
             if (body != null) {
-                throw ResponseException.fromJson(body);
+                throw ResponseException.fromJson(status, body);
             }
 
             throw new ResponseException(ResponseException.fromHttpStatusCode(status), "other failure: " + status);

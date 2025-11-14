@@ -5,6 +5,7 @@ import dataaccess.GameDAO;
 import object.AuthData;
 import object.GameData;
 import requests.JoinGameRequest;
+import server.Server;
 
 import java.util.Set;
 
@@ -57,6 +58,8 @@ public class JoinGameService {
             default -> throw new ServiceException(400, "bad request");
         }
 
-        gameDAO.updateGame(updatedGame);
+        if (!gameDAO.updateGame(updatedGame)) {
+            throw new ServiceException(400, "bad request");
+        }
     }
 }
