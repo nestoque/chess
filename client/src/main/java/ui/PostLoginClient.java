@@ -46,7 +46,7 @@ public class PostLoginClient {
         responses.ListGamesResult games = server.listGames(authToken);
         StringBuilder outString = new StringBuilder();
         for (ListGameArrayResult game : games.games()) {
-            outString.append(String.format("ID: %d\tName: %s\tWhite: %s\tBlack: %s\n", game.gameID(), game.gameName(), game.whiteUsername(), game.blackUsername()));
+            outString.append(String.format("ID: %d\tName: %s\tWhite: %s\tBlack: %s\n", game.gameID(), game.gameName(), printUser(game.whiteUsername()), printUser(game.blackUsername())));
         }
 
         return new ReplResult(outString.toString(), ReplResult.State.POSTLOGIN);
@@ -93,7 +93,7 @@ public class PostLoginClient {
                 g - List current games
                 c <Game Name> - Create a new game
                 j <Game ID #> <Team Color> - Join an existing game
-                w <Game ID # > - Watch a game
+                w <Game ID #> - Watch a game
                 h - Print this Help message again
                 logout - Logout out of chess
                 """, ReplResult.State.POSTLOGIN);
@@ -105,6 +105,10 @@ public class PostLoginClient {
 
     public String getJoinedColor() {
         return joinedColor;
+    }
+
+    private String printUser(String username) {
+        return (username == null) ? "" : username;
     }
 }
 

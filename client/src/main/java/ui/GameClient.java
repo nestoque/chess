@@ -35,8 +35,10 @@ public class GameClient {
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
                 case "t" -> throw new ResponseException(ResponseException.Code.ClientError, "");
+                case "b", "board" -> help();
+                case "h", "help" -> help();
                 case "q", "quit" -> new ReplResult("quit\n", ReplResult.State.POSTLOGIN);
-                default -> help();
+                default -> realHelp();
             };
         } catch (ResponseException ex) {
             return new ReplResult(ex.getMessage(), ReplResult.State.GAME);
@@ -45,19 +47,25 @@ public class GameClient {
 
 
     public ReplResult help() {
-//        return new ReplResult("""
-//                Options
-//                idk
-//                """, ReplResult.State.GAME);
-//        ListGamesResult res = server.listGames(authToken);
+        ChessBoard blankBoard = (new ChessBoard());
+        blankBoard.resetBoard();
+        return new ReplResult(DrawBoard.draw(joinedColor, blankBoard), ReplResult.State.GAME);
+    }
+
+    public ReplResult realHelp() {
+        return new ReplResult("""
+                Expected <square> <square> 
+                    ex: a2 a4
+                press q to leave game
+                """, ReplResult.State.GAME);
+    }
+//    ListGamesResult res = server.listGames(authToken);
 //        for (ListGameArrayResult game: res.games()) {
 //            if (game.gameID() == joinedGame){
 //                return DrawBoard.draw(game.)
 //            }
 //        }
-//
-        return new ReplResult(joinedColor, DrawBoard.draw(new ChessBoard()), ReplResult.State.GAME);
-    }
+//    }
 }
 
 

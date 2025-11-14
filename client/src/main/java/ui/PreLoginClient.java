@@ -21,10 +21,10 @@ public class PreLoginClient {
 
     public ReplResult eval(String input) {
         try {
-            String[] tokens = input.toLowerCase().split(" ");
+            String[] tokens = input.split(" ");
             String cmd = (tokens.length > 0) ? tokens[0] : "help";
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
-            return switch (cmd) {
+            return switch (cmd.toLowerCase()) {
                 case "l" -> login(params);
                 case "r" -> register(params);
                 case "q", "quit" -> new ReplResult("quit", ReplResult.State.PRELOGIN);
