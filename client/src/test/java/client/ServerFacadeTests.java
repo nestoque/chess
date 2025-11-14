@@ -170,7 +170,7 @@ public class ServerFacadeTests {
         ResponseException exception = assertThrows(ResponseException.class, () ->
                 facade.createGame(res.authToken(), new CreateGameRequest(null)), "Didn't throw exception");
         assertEquals(ResponseException.Code.ClientError, exception.code());
-        assertEquals("bad request", exception.getMessage());
+        assertEquals("Error: bad request", exception.getMessage());
     }
 
     //Join Game +
@@ -181,6 +181,10 @@ public class ServerFacadeTests {
         RegisterResult res = facade.register(REGISTER_REQ);
         CreateGameResult gameRes = facade.createGame(res.authToken(), CREATE_GAME_REQ);
         assertDoesNotThrow(() -> facade.joinGame(res.authToken(), JOIN_GAME_REQ), "threw error while joining game");
+
+        RegisterRequest req = new RegisterRequest("player1", "password", "p1@email.com");
+        RegisterResult res2 = facade.register(req);
+        assertDoesNotThrow(() -> facade.joinGame(res2.authToken(), new JoinGameRequest("BLACK", 1)), "threw error while joining game");
     }
 
     //Join Game -
@@ -193,8 +197,8 @@ public class ServerFacadeTests {
 
         ResponseException exception = assertThrows(ResponseException.class, () ->
                 facade.joinGame(res.authToken(), new JoinGameRequest(PLAYER_COLOR, gameRes.gameID() + 1)), "Didn't throw exception");
-        assertEquals(400, exception.code());
-        assertEquals("bad request", exception.getMessage());
+        assertEquals(ResponseException.Code.ClientError, exception.code());
+        assertEquals("Error: bad request", exception.getMessage());
     }
 
     //List Game +
@@ -225,9 +229,9 @@ public class ServerFacadeTests {
     public void listGameUnauthorized() throws ResponseException {
         String badAuthToken = TokenUtils.generateToken();
 
-        ServiceException exception = assertThrows(ServiceException.class, () -> facade.listGames(badAuthToken), "Didn't throw exception");
-        assertEquals(400, exception.getStatusCode());
-        assertEquals("unauthorized", exception.getMessage());
+        ResponseException exception = assertThrows(ResponseException.class, () -> facade.listGames(badAuthToken), "Didn't throw exception");
+        assertEquals(ResponseException.Code.ClientError, exception.code());
+        assertEquals("Error: unauthorized", exception.getMessage());
     }
 
 
