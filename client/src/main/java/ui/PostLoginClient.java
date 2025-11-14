@@ -45,7 +45,7 @@ public class PostLoginClient {
         responses.ListGamesResult games = server.listGames(authToken);
         StringBuilder outString = new StringBuilder();
         for (ListGameArrayResult game : games.games()) {
-            outString.append(String.format("ID: %d\t Name: %s\t White: %s\t Black: %s\n", game.gameID(), game.gameName(), game.whiteUsername(), game.blackUsername()));
+            outString.append(String.format("ID: %d\tName: %s\tWhite: %s\tBlack: %s\n", game.gameID(), game.gameName(), game.whiteUsername(), game.blackUsername()));
         }
 
         return new ReplResult(outString.toString(), ReplResult.State.POSTLOGIN);
@@ -62,7 +62,7 @@ public class PostLoginClient {
 
     public ReplResult join(String... params) throws ResponseException {
         if (params.length == 2) {
-            server.joinGame(authToken, new JoinGameRequest(params[1], Integer.parseInt(params[0])));
+            server.joinGame(authToken, new JoinGameRequest(params[1].toUpperCase(), Integer.parseInt(params[0])));
             return new ReplResult(String.format("Join Game #%s as %s.\n", params[0], params[1]), ReplResult.State.GAME);
         }
         throw new ResponseException(ResponseException.Code.ClientError, "Expected: <Game ID #> <WHITE/BLACK>");

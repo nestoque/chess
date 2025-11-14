@@ -1,6 +1,10 @@
 package ui;
 
+import chess.ChessBoard;
+import chess.ChessGame;
 import exception.ResponseException;
+import responses.ListGameArrayResult;
+import responses.ListGamesResult;
 import serverfacade.ServerFacade;
 
 import java.util.Arrays;
@@ -38,11 +42,18 @@ public class GameClient {
 
 
     public ReplResult help() {
-        return new ReplResult("""
-                Options
-                idk
-                """, ReplResult.State.GAME);
-    }
+//        return new ReplResult("""
+//                Options
+//                idk
+//                """, ReplResult.State.GAME);
+//        ListGamesResult res = server.listGames(authToken);
+//        for (ListGameArrayResult game: res.games()) {
+//            if (game.gameID() == joinedGame){
+//                return DrawBoard.draw(game.)
+//            }
+//        }
+//    }
+        return DrawBoard.draw(new ChessBoard());
 }
 
 
