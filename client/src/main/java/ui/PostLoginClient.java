@@ -56,25 +56,36 @@ public class PostLoginClient {
     public ReplResult create(String... params) throws ResponseException {
         if (params.length == 1) {
             CreateGameResult res = server.createGame(authToken, new CreateGameRequest(params[0]));
-            return new ReplResult(String.format("Game ID # %d created.\n", res.gameID()), ReplResult.State.POSTLOGIN);
+            return new ReplResult(String.format("Game # %d created.\n", res.gameID()), ReplResult.State.POSTLOGIN);
         }
         throw new ResponseException(ResponseException.Code.ClientError, "Expected: <Game Name>");
     }
 
     public ReplResult join(String... params) throws ResponseException {
-        if (params.length == 2) {
-            server.joinGame(authToken, new JoinGameRequest(params[1].toUpperCase(), Integer.parseInt(params[0])));
-            joinedColor = params[1].toUpperCase();
-            return new ReplResult(String.format("Join Game #%s as %s.\n", params[0], params[1]), ReplResult.State.GAME);
+        try {
+            if (params.length == 2 && Integer.parseInt(params[0]) < 1) {
+                server.joinGame(authToken, new JoinGameRequest(params[1].toUpperCase(), Integer.parseInt(params[0])));
+                joinedColor = params[1].toUpperCase();
+                return new ReplResult(String.format("Join Game #%s as %s.\n", params[0], params[1]), ReplResult.State.GAME);
+            }
+            throw new ResponseException(ResponseException.Code.ClientError, "Expected: <Game #> <WHITE/BLACK>");
+        } catch (Exception e) {
+            throw new ResponseException(ResponseException.Code.ClientError, e.getMessage());
         }
-        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <Game ID #> <WHITE/BLACK>");
+
+
     }
 
     public ReplResult watch(String... params) throws ResponseException {
-        if (params.length == 1) {
-            return new ReplResult(String.format("Game ID # %s created.\n", params[0]), ReplResult.State.GAME);
+        try {
+            if (params.length == 1 && Integer.parseInt(params[0]) < 1) {
+                joinedColor = null;
+                return new ReplResult(String.format("observing Game # %s.\n", params[0]), ReplResult.State.GAME);
+            }
+            throw new ResponseException(ResponseException.Code.ClientError, "Expected: <Game #>");
+        } catch (Exception e) {
+            throw new ResponseException(ResponseException.Code.ClientError, e.getMessage());
         }
-        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <Game ID #>");
     }
 
     public ReplResult logout(String... params) throws ResponseException {
@@ -92,8 +103,8 @@ public class PostLoginClient {
                 Options
                 g - List current games
                 c <Game Name> - Create a new game
-                j <Game ID #> <Team Color> - Join an existing game
-                w <Game ID #> - Watch a game
+                j <Game #> <Team Color> - Join an existing game
+                w <Game #> - Watch a game
                 h - Print this Help message again
                 logout - Logout out of chess
                 """, ReplResult.State.POSTLOGIN);

@@ -29,7 +29,7 @@ public class DrawBoard {
             endRow = -1;
             drawDirection = -1;
             colLetterStart = LETTERLEN - 1;
-            colLetterEnd = 0;
+            colLetterEnd = -1;
 
         } else {
             startRow = 0;
@@ -42,7 +42,7 @@ public class DrawBoard {
 
         String[] text = board.toString().replace("\n", "").substring(1).split("[|]+");
         StringBuilder boardString = new StringBuilder();
-        for (int row = startRow; row != endRow; row -= drawDirection) {
+        for (int row = startRow; row != endRow; row += drawDirection) {
             switch (row) {
                 case (0), (MAX_ROWS - 1) -> {
                     boardString.append(TEXT_CLR + TEXT_BACKGROUND_CLR + EMPTY);
