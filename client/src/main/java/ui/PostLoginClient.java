@@ -11,6 +11,7 @@ import java.util.Arrays;
 public class PostLoginClient {
     private String authToken;
     private int joinedGameID;
+    private String joinedColor = null;
     private final ServerFacade server;
     private final PreLoginClient preClient;
 
@@ -63,6 +64,7 @@ public class PostLoginClient {
     public ReplResult join(String... params) throws ResponseException {
         if (params.length == 2) {
             server.joinGame(authToken, new JoinGameRequest(params[1].toUpperCase(), Integer.parseInt(params[0])));
+            joinedColor = params[1].toUpperCase();
             return new ReplResult(String.format("Join Game #%s as %s.\n", params[0], params[1]), ReplResult.State.GAME);
         }
         throw new ResponseException(ResponseException.Code.ClientError, "Expected: <Game ID #> <WHITE/BLACK>");
@@ -99,6 +101,10 @@ public class PostLoginClient {
 
     public int getJoinedGameID() {
         return joinedGameID;
+    }
+
+    public String getJoinedColor() {
+        return joinedColor;
     }
 }
 

@@ -2,6 +2,7 @@ package ui;
 
 import chess.ChessBoard;
 import chess.ChessGame;
+import client.Repl;
 import exception.ResponseException;
 import responses.ListGameArrayResult;
 import responses.ListGamesResult;
@@ -11,7 +12,8 @@ import java.util.Arrays;
 
 public class GameClient {
     private String authToken;
-    int joinedGame;
+    private int joinedGame;
+    private String joinedColor;
     private final ServerFacade server;
     private final PreLoginClient preClient;
     private final PostLoginClient postClient;
@@ -27,6 +29,7 @@ public class GameClient {
         try {
             authToken = preClient.getAuthToken();
             joinedGame = postClient.getJoinedGameID();
+            joinedColor = postClient.getJoinedColor();
             String[] tokens = input.toLowerCase().split(" ");
             String cmd = (tokens.length > 0) ? tokens[0] : "help";
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
@@ -52,8 +55,9 @@ public class GameClient {
 //                return DrawBoard.draw(game.)
 //            }
 //        }
-//    }
-        return DrawBoard.draw(new ChessBoard());
+//
+        return new ReplResult(joinedColor, DrawBoard.draw(new ChessBoard()), ReplResult.State.GAME);
+    }
 }
 
 
