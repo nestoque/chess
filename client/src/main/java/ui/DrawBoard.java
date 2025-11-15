@@ -109,10 +109,12 @@ public class DrawBoard {
         StringBuilder boardString = new StringBuilder();
         for (int col = 0; col < MAX_COLS; col++) {
             if (col == 0 || col == MAX_COLS - 1) {
-                boardString.append(drawSquare(" " + Integer.toString(9 - row) + "\u2003", TEXT_CLR + TEXT_BACKGROUND_CLR));
+                boardString.append(drawSquare(" " + Integer.toString(9 - row) + "\u2003",
+                        TEXT_CLR + TEXT_BACKGROUND_CLR));
             } else {
                 String thisCharacter = text[(row - 1) * (MAX_COLS - 2) + (col - 1)];
-//                            boardString.append(drawSquare((thisCharacter == " ") ? EMPTY : " " + thisCharacter + " ", getColorFormat(thisCharacter, thisSquareColor)));
+//                boardString.append(drawSquare((thisCharacter == " ") ? EMPTY : " " + thisCharacter + " ",
+//                        getColorFormat(thisCharacter, thisSquareColor)));
                 boardString.append(drawSquare(pickPiece(thisCharacter), getColorFormat(thisCharacter, thisSquareColor)));
                 if (thisSquareColor == SquareColor.WHITE) {
                     thisSquareColor = SquareColor.BLACK;

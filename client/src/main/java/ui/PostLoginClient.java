@@ -47,7 +47,8 @@ public class PostLoginClient {
         StringBuilder outString = new StringBuilder();
         int cnt = 1;
         for (ListGameArrayResult game : games.games()) {
-            outString.append(String.format("#: %d\tName: %s\tWhite: %s\tBlack: %s\n", cnt, game.gameName(), printUser(game.whiteUsername()), printUser(game.blackUsername())));
+            outString.append(String.format("#: %d\tName: %s\tWhite: %s\tBlack: %s\n",
+                    cnt, game.gameName(), printUser(game.whiteUsername()), printUser(game.blackUsername())));
             cnt++;
         }
 

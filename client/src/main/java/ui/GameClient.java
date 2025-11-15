@@ -14,7 +14,8 @@ public class GameClient {
     private final PreLoginClient preClient;
     private final PostLoginClient postClient;
 
-    public GameClient(ServerFacade mainServer, PreLoginClient preClient, PostLoginClient postClient) throws ResponseException {
+    public GameClient(ServerFacade mainServer, PreLoginClient preClient, PostLoginClient postClient)
+            throws ResponseException {
         server = mainServer;
         this.preClient = preClient;
         this.postClient = postClient;
