@@ -123,7 +123,6 @@ public class DrawBoard {
 
         }
         return boardString.toString();
-        ;
     }
 
 }
