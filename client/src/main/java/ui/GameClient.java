@@ -1,11 +1,7 @@
 package ui;
 
 import chess.ChessBoard;
-import chess.ChessGame;
-import client.Repl;
 import exception.ResponseException;
-import responses.ListGameArrayResult;
-import responses.ListGamesResult;
 import serverfacade.ServerFacade;
 
 import java.util.Arrays;
@@ -59,13 +55,6 @@ public class GameClient {
                 press q to leave game
                 """, ReplResult.State.GAME);
     }
-//    ListGamesResult res = server.listGames(authToken);
-//        for (ListGameArrayResult game: res.games()) {
-//            if (game.gameID() == joinedGame){
-//                return DrawBoard.draw(game.)
-//            }
-//        }
-//    }
 }
 
 

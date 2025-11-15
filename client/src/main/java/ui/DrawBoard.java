@@ -18,11 +18,11 @@ public class DrawBoard {
     private static final String BLACK_SQUARE_CLR = SET_BG_COLOR_WHITE;
     private static final String BLACK_PIECE_CLR = SET_TEXT_COLOR_MAGENTA;
     private static final String RESET_ALL = RESET_TEXT_COLOR + RESET_BG_COLOR;
-    private static int LETTERLEN = LETTER_ROW.length;
+    private static final int LETTERLEN = LETTER_ROW.length;
 
     public static String draw(String teamColor, ChessBoard board) {
         int startRow, endRow, drawDirection;
-        squareColor thisSquareColor = squareColor.WHITE;
+        SquareColor thisSquareColor = SquareColor.WHITE;
         int colLetterStart, colLetterEnd;
         if (Objects.equals(teamColor, "BLACK")) {
             startRow = MAX_ROWS - 1;
@@ -44,36 +44,14 @@ public class DrawBoard {
         StringBuilder boardString = new StringBuilder();
         for (int row = startRow; row != endRow; row += drawDirection) {
             switch (row) {
-                case (0), (MAX_ROWS - 1) -> {
-                    boardString.append(TEXT_CLR + TEXT_BACKGROUND_CLR + EMPTY);
-                    for (int col = colLetterStart; col != colLetterEnd; col += drawDirection) {
-                        boardString.append(" " + LETTER_ROW[col] + "\u2003");
-                    }
-                    boardString.append(EMPTY);
-                }
-                default -> {
-                    for (int col = 0; col < MAX_COLS; col++) {
-                        if (col == 0 || col == MAX_COLS - 1) {
-                            boardString.append(drawSquare(" " + Integer.toString(9 - row) + "\u2003", TEXT_CLR + TEXT_BACKGROUND_CLR));
-                        } else {
-                            String thisCharacter = text[(row - 1) * (MAX_COLS - 2) + (col - 1)];
-//                            boardString.append(drawSquare((thisCharacter == " ") ? EMPTY : " " + thisCharacter + " ", getColorFormat(thisCharacter, thisSquareColor)));
-                            boardString.append(drawSquare(pickPiece(thisCharacter), getColorFormat(thisCharacter, thisSquareColor)));
-                            if (thisSquareColor == squareColor.WHITE) {
-                                thisSquareColor = squareColor.BLACK;
-                            } else {
-                                thisSquareColor = squareColor.WHITE;
-                            }
-                        }
-
-                    }
-                }
+                case (0), (MAX_ROWS - 1) -> boardString.append(topBottom(colLetterStart, colLetterEnd, drawDirection));
+                default -> boardString.append(middleRows(row, text, thisSquareColor));
             }
             boardString.append(RESET_ALL + "\n");
-            if (thisSquareColor == squareColor.WHITE) {
-                thisSquareColor = squareColor.BLACK;
+            if (thisSquareColor == SquareColor.WHITE) {
+                thisSquareColor = SquareColor.BLACK;
             } else {
-                thisSquareColor = squareColor.WHITE;
+                thisSquareColor = SquareColor.WHITE;
             }
         }
 
@@ -81,7 +59,7 @@ public class DrawBoard {
         return boardString.toString();
     }
 
-    private static String getColorFormat(String piece, squareColor thisColor) {
+    private static String getColorFormat(String piece, SquareColor thisColor) {
         String foregroundColor = (Character.isUpperCase(piece.charAt(0))) ? WHITE_PIECE_CLR : BLACK_PIECE_CLR;
         String backgroundColor = switch (thisColor) {
             case WHITE -> WHITE_SQUARE_CLR;
@@ -94,7 +72,7 @@ public class DrawBoard {
         return colorFormatter + txt;
     }
 
-    private enum squareColor {
+    private enum SquareColor {
         WHITE,
         BLACK
     }
@@ -115,6 +93,37 @@ public class DrawBoard {
             case "p" -> BLACK_PAWN;
             default -> EMPTY;
         };
+    }
+
+    private static String topBottom(int colLetterStart, int colLetterEnd, int drawDirection) {
+        StringBuilder boardString = new StringBuilder();
+        boardString.append(TEXT_CLR + TEXT_BACKGROUND_CLR + EMPTY);
+        for (int col = colLetterStart; col != colLetterEnd; col += drawDirection) {
+            boardString.append(" " + LETTER_ROW[col] + "\u2003");
+        }
+        boardString.append(EMPTY);
+        return boardString.toString();
+    }
+
+    private static String middleRows(int row, String[] text, SquareColor thisSquareColor) {
+        StringBuilder boardString = new StringBuilder();
+        for (int col = 0; col < MAX_COLS; col++) {
+            if (col == 0 || col == MAX_COLS - 1) {
+                boardString.append(drawSquare(" " + Integer.toString(9 - row) + "\u2003", TEXT_CLR + TEXT_BACKGROUND_CLR));
+            } else {
+                String thisCharacter = text[(row - 1) * (MAX_COLS - 2) + (col - 1)];
+//                            boardString.append(drawSquare((thisCharacter == " ") ? EMPTY : " " + thisCharacter + " ", getColorFormat(thisCharacter, thisSquareColor)));
+                boardString.append(drawSquare(pickPiece(thisCharacter), getColorFormat(thisCharacter, thisSquareColor)));
+                if (thisSquareColor == SquareColor.WHITE) {
+                    thisSquareColor = SquareColor.BLACK;
+                } else {
+                    thisSquareColor = SquareColor.WHITE;
+                }
+            }
+
+        }
+        return boardString.toString();
+        ;
     }
 
 }

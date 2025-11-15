@@ -24,22 +24,19 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ServerFacadeTests {
 
-    private final String USERNAME = "test_user";
-    private final String PASSWORD = "test_password";
-    private final String ENCRYPTEDPASS = BCrypt.hashpw("test_password", BCrypt.gensalt());
-    private final String EMAIL = "fake_email@gmail.com";
-    private final String GAME_NAME = "Test_Game";
-    private final String PLAYER_COLOR = "WHITE";
+    private static final String USERNAME = "test_user";
+    private static final String PASSWORD = "test_password";
+    private static final String ENCRYPTEDPASS = BCrypt.hashpw("test_password", BCrypt.gensalt());
+    private static final String EMAIL = "fake_email@gmail.com";
+    private static final String GAME_NAME = "Test_Game";
+    private static final String PLAYER_COLOR = "WHITE";
 
-    private final CreateGameRequest CREATE_GAME_REQ = new CreateGameRequest(GAME_NAME);
-    private final JoinGameRequest JOIN_GAME_REQ = new JoinGameRequest(PLAYER_COLOR, 1);
-    private final LoginRequest LOGIN_REQ = new LoginRequest(USERNAME, PASSWORD);
-    private final RegisterRequest REGISTER_REQ = new RegisterRequest(USERNAME, PASSWORD, EMAIL);
+    private static final CreateGameRequest CREATE_GAME_REQ = new CreateGameRequest(GAME_NAME);
+    private static final JoinGameRequest JOIN_GAME_REQ = new JoinGameRequest(PLAYER_COLOR, 1);
+    private static final LoginRequest LOGIN_REQ = new LoginRequest(USERNAME, PASSWORD);
+    private static final RegisterRequest REGISTER_REQ = new RegisterRequest(USERNAME, PASSWORD, EMAIL);
 
-    private final CreateGameResult CREATE_GAME_RES = new CreateGameResult(1);
-    //private final ListGamesResult LIST_GAME_RES = new ListGamesResult();
-    //private final LoginResult LOGIN_RES = new LoginResult();
-    //private final RegisterResult REGISTER_RES = new RegisterResult() ;
+    private static final CreateGameResult CREATE_GAME_RES = new CreateGameResult(1);
 
     private static Server server;
     private static ServerFacade facade;
@@ -88,8 +85,8 @@ public class ServerFacadeTests {
     @DisplayName("Register +")
     public void registerSuccess() throws ResponseException {
         RegisterRequest req = new RegisterRequest("player1", "password", "p1@email.com");
-        var RegisterResponse = facade.register(req);
-        assertTrue(RegisterResponse.authToken().length() > 10);
+        RegisterResult res = facade.register(req);
+        assertTrue(res.authToken().length() > 10);
     }
 
     //Register -
@@ -98,8 +95,9 @@ public class ServerFacadeTests {
     @DisplayName("Register -")
     public void registerAlreadyTakenFail() throws ResponseException {
         RegisterRequest req = new RegisterRequest("player1", "password", "p1@email.com");
-        var RegisterResponse = facade.register(req);
-        ResponseException exception = assertThrows(ResponseException.class, () -> facade.register(req), "Didn't throw exception");
+        RegisterResult res = facade.register(req);
+        ResponseException exception = assertThrows(ResponseException.class,
+                () -> facade.register(req), "Didn't throw exception");
 
         assertEquals(ResponseException.Code.ClientError, exception.code());
         assertEquals("Error: already taken", exception.getMessage());
@@ -112,9 +110,9 @@ public class ServerFacadeTests {
     public void loginSuccess() throws ResponseException {
         RegisterResult res = facade.register(REGISTER_REQ);
         facade.logout(res.authToken());
-        LoginResult LogRes = facade.login(LOGIN_REQ);
-        assertNotNull(LogRes, "Invalid Login");
-        Assertions.assertEquals(USERNAME, LogRes.username(), "Username not correctly logged in");
+        LoginResult logRes = facade.login(LOGIN_REQ);
+        assertNotNull(logRes, "Invalid Login");
+        Assertions.assertEquals(USERNAME, logRes.username(), "Username not correctly logged in");
     }
 
     //Login -
@@ -124,7 +122,9 @@ public class ServerFacadeTests {
     public void loginWrongPassword() throws ResponseException {
         RegisterResult res = facade.register(REGISTER_REQ);
         facade.logout(res.authToken());
-        ResponseException exception = assertThrows(ResponseException.class, () -> facade.login(new LoginRequest(USERNAME, "different password")), "Didn't throw exception");
+        ResponseException exception = assertThrows(ResponseException.class,
+                () -> facade.login(new LoginRequest(USERNAME, "different password")),
+                "Didn't throw exception");
         assertEquals(ResponseException.Code.ClientError, exception.code());
         assertEquals("Error: unauthorized", exception.getMessage());
     }
@@ -136,7 +136,8 @@ public class ServerFacadeTests {
     public void logoutSuccess() throws ResponseException {
         RegisterResult res = facade.register(REGISTER_REQ);
         assertDoesNotThrow(() -> facade.logout(res.authToken()), "throws error");
-        assertThrows(ResponseException.class, () -> facade.createGame(res.authToken(), CREATE_GAME_REQ), "Didn't throw exception");
+        assertThrows(ResponseException.class, () -> facade.createGame(res.authToken(), CREATE_GAME_REQ),
+                "Didn't throw exception");
     }
 
     //Logout -
@@ -146,7 +147,8 @@ public class ServerFacadeTests {
     public void logoutWrongAuth() throws ResponseException {
         RegisterResult res = facade.register(REGISTER_REQ);
         String otherAuthToken = TokenUtils.generateToken();
-        assertThrows(ResponseException.class, () -> facade.logout(otherAuthToken), "Didn't throw exception for incorrect auth token");
+        assertThrows(ResponseException.class, () -> facade.logout(otherAuthToken),
+                "Didn't throw exception for incorrect auth token");
     }
 
     //Create Game +
@@ -167,7 +169,8 @@ public class ServerFacadeTests {
     public void createGameNoName() throws ResponseException {
         RegisterResult res = facade.register(REGISTER_REQ);
         ResponseException exception = assertThrows(ResponseException.class, () ->
-                facade.createGame(res.authToken(), new CreateGameRequest(null)), "Didn't throw exception");
+                        facade.createGame(res.authToken(), new CreateGameRequest(null)),
+                "Didn't throw exception");
         assertEquals(ResponseException.Code.ClientError, exception.code());
         assertEquals("Error: bad request", exception.getMessage());
     }
@@ -179,11 +182,13 @@ public class ServerFacadeTests {
     public void joinGameSuccess() throws ResponseException {
         RegisterResult res = facade.register(REGISTER_REQ);
         CreateGameResult gameRes = facade.createGame(res.authToken(), CREATE_GAME_REQ);
-        assertDoesNotThrow(() -> facade.joinGame(res.authToken(), JOIN_GAME_REQ), "threw error while joining game");
+        assertDoesNotThrow(() -> facade.joinGame(res.authToken(), JOIN_GAME_REQ),
+                "threw error while joining game");
 
         RegisterRequest req = new RegisterRequest("player1", "password", "p1@email.com");
         RegisterResult res2 = facade.register(req);
-        assertDoesNotThrow(() -> facade.joinGame(res2.authToken(), new JoinGameRequest("BLACK", 1)), "threw error while joining game");
+        assertDoesNotThrow(() -> facade.joinGame(res2.authToken(), new JoinGameRequest("BLACK", 1)),
+                "threw error while joining game");
     }
 
     //Join Game -
@@ -195,7 +200,8 @@ public class ServerFacadeTests {
         CreateGameResult gameRes = facade.createGame(res.authToken(), CREATE_GAME_REQ);
 
         ResponseException exception = assertThrows(ResponseException.class, () ->
-                facade.joinGame(res.authToken(), new JoinGameRequest(PLAYER_COLOR, gameRes.gameID() + 1)), "Didn't throw exception");
+                facade.joinGame(res.authToken(), new JoinGameRequest(PLAYER_COLOR,
+                        gameRes.gameID() + 1)), "Didn't throw exception");
         assertEquals(ResponseException.Code.ClientError, exception.code());
         assertEquals("Error: bad request", exception.getMessage());
     }
@@ -228,7 +234,8 @@ public class ServerFacadeTests {
     public void listGameUnauthorized() throws ResponseException {
         String badAuthToken = TokenUtils.generateToken();
 
-        ResponseException exception = assertThrows(ResponseException.class, () -> facade.listGames(badAuthToken), "Didn't throw exception");
+        ResponseException exception = assertThrows(ResponseException.class,
+                () -> facade.listGames(badAuthToken), "Didn't throw exception");
         assertEquals(ResponseException.Code.ClientError, exception.code());
         assertEquals("Error: unauthorized", exception.getMessage());
     }

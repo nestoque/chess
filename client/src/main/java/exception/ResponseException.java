@@ -38,15 +38,7 @@ public class ResponseException extends Exception {
         if (httpStatusCode >= 400 && httpStatusCode < 500) {
             return Code.ClientError;
         }
-        // Everything else (5xx, 1xx, 3xx) is a server-level issue
         return Code.ServerError;
-    }
-
-    public int toHttpStatusCode() {
-        return switch (code) {
-            case ServerError -> 500;
-            case ClientError -> 400;
-        };
     }
 
 }
