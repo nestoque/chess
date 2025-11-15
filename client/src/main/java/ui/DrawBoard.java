@@ -45,7 +45,8 @@ public class DrawBoard {
         for (int row = startRow; row != endRow; row += drawDirection) {
             switch (row) {
                 case (0), (MAX_ROWS - 1) -> boardString.append(topBottom(colLetterStart, colLetterEnd, drawDirection));
-                default -> boardString.append(middleRows(row, text, thisSquareColor));
+                default -> boardString.append(middleRows(row, text, thisSquareColor,
+                        startRow, endRow, drawDirection));
             }
             boardString.append(RESET_ALL + "\n");
             if (thisSquareColor == SquareColor.WHITE) {
@@ -105,9 +106,10 @@ public class DrawBoard {
         return boardString.toString();
     }
 
-    private static String middleRows(int row, String[] text, SquareColor thisSquareColor) {
+    private static String middleRows(int row, String[] text, SquareColor thisSquareColor,
+                                     int startCol, int endCol, int drawDirection) {
         StringBuilder boardString = new StringBuilder();
-        for (int col = 0; col < MAX_COLS; col++) {
+        for (int col = startCol; col != endCol; col += drawDirection) {
             if (col == 0 || col == MAX_COLS - 1) {
                 boardString.append(drawSquare(" " + Integer.toString(9 - row) + "\u2003",
                         TEXT_CLR + TEXT_BACKGROUND_CLR));

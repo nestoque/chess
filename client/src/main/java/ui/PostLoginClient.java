@@ -59,7 +59,7 @@ public class PostLoginClient {
     public ReplResult create(String... params) throws ResponseException {
         if (params.length == 1) {
             CreateGameResult res = server.createGame(authToken, new CreateGameRequest(params[0]));
-            return new ReplResult(String.format("Game # %d created.\n", res.gameID()), ReplResult.State.POSTLOGIN);
+            return new ReplResult(String.format("Game \"%s\" created.\n", params[0]), ReplResult.State.POSTLOGIN);
         }
         throw new ResponseException(ResponseException.Code.ClientError, "Expected: <Game Name>");
     }
