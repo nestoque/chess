@@ -2,7 +2,6 @@ package serverfacade;
 
 import com.google.gson.Gson;
 import exception.ResponseException;
-import object.AuthData;
 import requests.*;
 import responses.*;
 

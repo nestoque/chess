@@ -3,6 +3,7 @@ package server;
 import com.google.gson.Gson;
 import dataaccess.*;
 import handlers.*;
+import server.websocket.WebSocketHandler;
 import service.*;
 import io.javalin.*;
 
@@ -35,6 +36,8 @@ public class Server {
         CreateGameHandler createGameHandler = new CreateGameHandler(createGameService, json);
         JoinGameHandler joinGameHandler = new JoinGameHandler(joinGameService, json);
 
+        WebSocketHandler webSocketHandler = new WebSocketHandler();
+
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
                 .delete("/db", clearHandler::handleRequest)
                 .post("/user", registerHandler::handleRequest)
@@ -42,7 +45,12 @@ public class Server {
                 .delete("session", logoutHandler::handleRequest)
                 .get("/game", listGamesHandler::handleRequest)
                 .post("/game", createGameHandler::handleRequest)
-                .put("/game", joinGameHandler::handleRequest);
+                .put("/game", joinGameHandler::handleRequest)
+                .ws("/ws", ws -> {
+                    ws.onConnect(webSocketHandler);
+                    ws.onMessage(webSocketHandler);
+                    ws.onClose(webSocketHandler);
+                });
     }
 
     public int run(int desiredPort) {

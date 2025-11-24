@@ -1,10 +1,6 @@
 package client;
 
-import chess.ChessGame;
 import exception.ResponseException;
-import object.AuthData;
-import object.GameData;
-import object.UserData;
 import org.junit.jupiter.api.*;
 import org.mindrot.jbcrypt.BCrypt;
 import requests.CreateGameRequest;
@@ -14,7 +10,6 @@ import requests.RegisterRequest;
 import responses.*;
 import server.Server;
 import serverfacade.ServerFacade;
-import service.ServiceException;
 import utils.TokenUtils;
 
 import static org.junit.jupiter.api.Assertions.*;

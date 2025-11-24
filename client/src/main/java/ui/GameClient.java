@@ -3,6 +3,8 @@ package ui;
 import chess.ChessBoard;
 import exception.ResponseException;
 import serverfacade.ServerFacade;
+import ui.websocket.WebSocketFacade;
+import websocket.messages.LoadGameMessage;
 
 import java.util.Arrays;
 
@@ -11,6 +13,7 @@ public class GameClient {
     private int joinedGame;
     private String joinedColor;
     private final ServerFacade server;
+    private final WebSocketFacade ws;
     private final PreLoginClient preClient;
     private final PostLoginClient postClient;
 
@@ -19,6 +22,7 @@ public class GameClient {
         server = mainServer;
         this.preClient = preClient;
         this.postClient = postClient;
+        ws = new WebSocketFacade(serverUrlm, this);
     }
 
 
@@ -56,6 +60,17 @@ public class GameClient {
                 press q to leave game
                 """, ReplResult.State.GAME);
     }
+
+
+    @Override
+    public void notify(ServerMessage message) {
+        switch (message.getServerMessageType()) {
+            case NOTIFICATION -> displayNotification(((NotificationMessage) message).getMessage());
+            case ERROR -> displayError(((ErrorMessage) message).getErrorMessage());
+            case LOAD_GAME -> loadGame(((LoadGameMessage) message).getGame());
+        }
+    }
+
 }
 
 
