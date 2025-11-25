@@ -5,34 +5,32 @@ import org.eclipse.jetty.websocket.api.Session;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
     //organize sessions by game idea
-    public final ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
+    public final ConcurrentHashMap<Session, Integer> connections = new ConcurrentHashMap<>();
 
-    public void add(String authToken, Integer gameID, Session session) {
-        Connection connection = new Connection(authToken, gameID, session);
-        connections.put(authToken, connection);
+    public void add(Session session, Integer gameID) {
+        connections.put(session, gameID);
     }
 
-    public void remove(String authToken) {
-        connections.remove(authToken);
+    public void remove(Session session) {
+        connections.remove(session);
     }
 
-    public void broadcast(Integer targetGameID, String excludeAuthToken, ServerMessage notification) throws IOException {
+    public void broadcast(Integer targetGameID, Session excludeSession, ServerMessage notification) throws IOException {
         String msg = notification.toString();
-        for (Connection c : connections.values()) {
-            if (c.session.isOpen()) {
-                if (c.gameID.equals(targetGameID)) {
-                    if (!c.authToken.equals(excludeAuthToken)) {
-                        c.session.getRemote().sendString(msg);
-                    }
+        for (Map.Entry<Session, Integer> entry : connections.entrySet()) {
+            Session sesh = entry.getKey();
+            Integer id = entry.getValue();
+            if (sesh.isOpen() && id.equals(targetGameID)) {
+                if (!sesh.equals(excludeSession)) {
+                    sesh.getRemote().sendString(msg);
                 }
             }
         }
     }
 
-    public void add(int gameID, Connection connection) {
-    }
 }

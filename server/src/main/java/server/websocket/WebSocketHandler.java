@@ -48,7 +48,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                     wsMessageContext.message(), UserGameCommand.class);
             gameId = command.getGameID();
             String username = getUsername(command.getAuthToken());
-            connections.add(gameId, session);
+            connections.add(session, gameId);
 
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, username, (ConnectCommand) command);
@@ -90,19 +90,14 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         var notifyLoadGame = new LoadGameMessage(gameData);
         session.getRemote().sendString(notifyLoadGame.toString());
         //Send notification connect to all
-
         AuthDAO authDAO = new SQLAuthDAO();
         AuthData thisAuth = authDAO.getAuth(authToken);
-        connections.add(authToken, gameID, session);
-        //check if username in game
         if (team == null) {
             team = "observer";
         }
         var message = String.format("%s has joined as %s", thisAuth.username(), team);
         var notification = new NotificationMessage(message);
-        connections.broadcast(gameID, authToken, notification);
-
-
+        connections.broadcast(gameID, session, notification);
     }
 
     //make move
