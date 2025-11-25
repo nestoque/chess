@@ -33,4 +33,15 @@ public class ConnectionManager {
         }
     }
 
+    public void broadcastAllInGame(Integer targetGameID, ServerMessage notification) throws IOException {
+        String msg = notification.toString();
+        for (Map.Entry<Session, Integer> entry : connections.entrySet()) {
+            Session sesh = entry.getKey();
+            Integer id = entry.getValue();
+            if (sesh.isOpen() && id.equals(targetGameID)) {
+                sesh.getRemote().sendString(msg);
+            }
+        }
+    }
+
 }

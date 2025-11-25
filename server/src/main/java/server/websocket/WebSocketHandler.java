@@ -1,17 +1,10 @@
 package server.websocket;
 
 import com.google.gson.Gson;
-import dataaccess.AuthDAO;
-import dataaccess.GameDAO;
-import dataaccess.SQLAuthDAO;
-import dataaccess.SQLGameDAO;
+import dataaccess.*;
 import exception.ResponseException;
-import io.javalin.websocket.WsCloseContext;
-import io.javalin.websocket.WsCloseHandler;
-import io.javalin.websocket.WsConnectContext;
-import io.javalin.websocket.WsConnectHandler;
-import io.javalin.websocket.WsMessageContext;
-import io.javalin.websocket.WsMessageHandler;
+import io.javalin.http.UnauthorizedResponse;
+import io.javalin.websocket.*;
 import object.AuthData;
 import object.GameData;
 import org.eclipse.jetty.websocket.api.Session;
@@ -29,6 +22,10 @@ import static javax.management.remote.JMXConnectorFactory.connect;
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
     private final ConnectionManager connections = new ConnectionManager();
+    private static final GameDAO gameDAO = new SQLGameDAO();
+    private static final UserDAO userDAO = new SQLUserDAO();
+    private static final AuthDAO authDAO = new SQLAuthDAO();
+    private static final Gson gson = new Gson();
 
     @Override
     public void handleConnect(WsConnectContext ctx) {
@@ -41,8 +38,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         int gameId = -1;
         Session session = wsMessageContext.session;
 
-        Gson gson = new Gson();
-
         try {
             UserGameCommand command = gson.fromJson(
                     wsMessageContext.message(), UserGameCommand.class);
@@ -51,15 +46,24 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             connections.add(session, gameId);
 
             switch (command.getCommandType()) {
-                case CONNECT -> connect(session, username, (ConnectCommand) command);
+                case CONNECT -> {
+                    ConnectCommand cmd = gson.fromJson(wsMessageContext.message(), ConnectCommand.class);
+                    connect(session, username, cmd);
+                }
                 case MAKE_MOVE -> {
                     MakeMoveCommand cmd = gson.fromJson(wsMessageContext.message(), MakeMoveCommand.class);
                     makeMove(session, username, cmd);
                 } //double deseriealizaTION
-                case LEAVE -> leaveGame(session, username, (LeaveGameCommand) command);
-                case RESIGN -> resign(session, username, (ResignCommand) command);
+                case LEAVE -> {
+                    LeaveGameCommand cmd = gson.fromJson(wsMessageContext.message(), LeaveGameCommand.class);
+                    leaveGame(session, username, cmd);
+                }
+                case RESIGN -> {
+                    ResignCommand cmd = gson.fromJson(wsMessageContext.message(), ResignCommand.class);
+                    resign(session, username, (ResignCommand) command);
+                }
             }
-        } catch (ServiceException ex) {
+        } catch (UnauthorizedException ex) {
             sendMessage(session, new ErrorMessage("Error: unauthorized"));
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -71,9 +75,11 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         session.getRemote().sendString(errorMessage.getErrorMessage());
     }
 
-    private String getUsername(String authToken) {
-        AuthDAO authDAO = new SQLAuthDAO();
+    private String getUsername(String authToken) throws UnauthorizedException {
         AuthData thisAuth = authDAO.getAuth(authToken);
+        if (thisAuth == null) {
+            throw new UnauthorizedException();
+        }
         return thisAuth.username();
     }
 
@@ -83,25 +89,23 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     //connect
-    private void connect(int gameID, String authToken, String team, Session session) throws IOException {
+    private void connect(Session session, String username, ConnectCommand cmd) throws IOException {
         //Send load game back
-        GameDAO gameDAO = new SQLGameDAO();
-        GameData gameData = gameDAO.getGame(gameID);
+        GameData gameData = gameDAO.getGame(cmd.getGameID());
         var notifyLoadGame = new LoadGameMessage(gameData);
         session.getRemote().sendString(notifyLoadGame.toString());
         //Send notification connect to all
-        AuthDAO authDAO = new SQLAuthDAO();
-        AuthData thisAuth = authDAO.getAuth(authToken);
+        String team = cmd.getTeam();
         if (team == null) {
             team = "observer";
         }
-        var message = String.format("%s has joined as %s", thisAuth.username(), team);
+        var message = String.format("%s has joined as %s", username, team);
         var notification = new NotificationMessage(message);
-        connections.broadcast(gameID, session, notification);
+        connections.broadcast(cmd.getGameID(), session, notification);
     }
 
     //make move
-    public void makeMove(String petName, String username, String sound) throws ResponseException {
+    public void makeMove(Session session, String username, MakeMoveCommand cmd) throws ResponseException {
         //verify move
         //Game is updated to represent the move. Game is updated in the database.
         //Server sends a LOAD_GAME message to all clients in the game (including the root client) with an updated game.
@@ -123,24 +127,40 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     //leave
-    private void leaveGame(String username, Session session) throws IOException {
+    private void leaveGame(Session session, String username, LeaveGameCommand cmd) throws IOException {
         //If a player is leaving, then the game is updated to remove the root client. Game is updated in the database.
         //Server sends a Notification message to all other clients in that game informing them that the root client left.
         //This applies to both players and observers.
         var message = String.format("%s left the game", username);
+        GameData gameData = gameDAO.getGame(cmd.getGameID());
+        removePlayer(gameData, username);
         var notification = new NotificationMessage(message);
-        connections.broadcast(gameID, authToken, notification);
+        connections.broadcast(cmd.getGameID(), session, notification);
         connections.remove(session);
     }
 
+    private void removePlayer(GameData gameData, String username) {
+        if (gameData.whiteUsername().equals(username)) {
+            gameData.setWhiteUsername(null);
+            gameDAO.updateGame(gameData);
+        } else if (gameData.blackUsername().equals(username)) {
+            gameData.setBlackUsername(null);
+            gameDAO.updateGame(gameData);
+        }
+    }
+
     //resign
-    private void resign(String visitorName, Session session) throws IOException {
+    private void resign(Session session, String username, ResignCommand cmd) throws IOException {
         //Server marks the game as over (no more moves can be made). Game is updated in the database.
         //Server sends a Notification message to all clients in that game informing them that the root client resigned.
         // This applies to both players and observers.
-        var message = String.format("%s left the shop", visitorName);
-        var notification = new Notification(Notification.Type.DEPARTURE, message);
-        connections.broadcast(session, notification);
+        GameData gameData = gameDAO.getGame(cmd.getGameID());
+        gameData.game().setTeamTurn(null);
+        removePlayer(gameData, username);
+
+        var message = String.format("%s resigned", username);
+        var notification = new NotificationMessage(message);
+        connections.broadcast(cmd.getGameID(), session, notification);
         connections.remove(session);
     }
 
