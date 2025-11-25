@@ -22,7 +22,7 @@ public class GameClient {
         server = mainServer;
         this.preClient = preClient;
         this.postClient = postClient;
-        ws = new WebSocketFacade(serverUrlm, this);
+        ws = new WebSocketFacade(serverUrl, this);
     }
 
 

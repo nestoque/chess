@@ -5,8 +5,8 @@ import object.GameData;
 public class LoadGameMessage extends ServerMessage {
     private final GameData gameData;
 
-    public LoadGameMessage(ServerMessageType type, GameData game) {
-        super(type);
+    public LoadGameMessage(GameData game) {
+        super(ServerMessageType.LOAD_GAME);
         gameData = game;
     }
 

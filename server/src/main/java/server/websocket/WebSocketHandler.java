@@ -1,7 +1,10 @@
 package server.websocket;
 
 import com.google.gson.Gson;
+import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
+import dataaccess.SQLAuthDAO;
+import dataaccess.SQLGameDAO;
 import exception.ResponseException;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsCloseHandler;
@@ -9,9 +12,13 @@ import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsConnectHandler;
 import io.javalin.websocket.WsMessageContext;
 import io.javalin.websocket.WsMessageHandler;
+import object.AuthData;
+import object.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.jetbrains.annotations.NotNull;
 import websocket.commands.*;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
 
 import java.io.IOException;
 
@@ -39,7 +46,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                     wsMessageContext.message(), UserGameCommand.class);
             gameId = command.getGameID();
             String username = getUsername(command.getAuthToken());
-            saveSession(gameId, session);
+            connections.add(gameId, session);
 
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, username, (ConnectCommand) command);
@@ -76,27 +83,56 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     //connect
-    private void connect(String visitorName, Session session) throws IOException {
-        connections.add(session);
-        var message = String.format("%s is in the shop", visitorName);
-        var notification = new Notification(Notification.Type.ARRIVAL, message);
+    private void connect(int gameID, String authToken, String team, Session session) throws IOException {
+        //Send load game back
+        GameDAO gameDAO = new SQLGameDAO();
+        GameData gameData = gameDAO.getGame(gameID);
+        var notifyLoadGame = new LoadGameMessage(gameData);
+        session.getRemote().sendString(notifyLoadGame.toString());
+        //Send connect to all
+
+        AuthDAO authDAO = new SQLAuthDAO();
+        AuthData thisAuth = authDAO.getAuth(authToken);
+        connections.add(gameID, new Connection(authToken, gameID, session));
+        //check if username in game
+        if (team == null) {
+            team = "observer";
+        }
+        var message = String.format("%s has joined as ", thisAuth.username(), team);
+        var notification = new ConnectCommand(UserGameCommand.CommandType.CONNECT, message);
         connections.broadcast(session, notification);
+
+
     }
 
     //make move
     public void makeMove(String petName, String username, String sound) throws ResponseException {
+        //verify move
+        //Game is updated to represent the move. Game is updated in the database.
+        //Server sends a LOAD_GAME message to all clients in the game (including the root client) with an updated game.
+        //Server sends a Notification message to all other clients in that game informing them what move was made.
+        //If the move results in check, checkmate or stalemate the server sends a Notification message to all clients.
+
+
         try {
             var message = String.format("%s says %s", petName, sound);
-            var notification = new Notification(Notification.Type.NOISE, message);
+            var notification = new LoadGameMessage(message);
             connections.broadcast(null, notification);
+
+            GameDAO gameDAO = new SQLGameDAO();
+            GameData gameData = gameDAO.getGame(gameID);
+            var notifyLoadGame = new LoadGameMessage(gameData);
         } catch (Exception ex) {
             throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
         }
     }
 
     //leave
-    private void leaveGame(String visitorName, Session session) throws IOException {
-        var message = String.format("%s left the shop", visitorName);
+    private void leaveGame(String username, Session session) throws IOException {
+        //If a player is leaving, then the game is updated to remove the root client. Game is updated in the database.
+        //Server sends a Notification message to all other clients in that game informing them that the root client left.
+        //This applies to both players and observers.
+        var message = String.format("%s left the game", username);
         var notification = new Notification(Notification.Type.DEPARTURE, message);
         connections.broadcast(session, notification);
         connections.remove(session);
@@ -104,6 +140,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     //resign
     private void resign(String visitorName, Session session) throws IOException {
+        //Server marks the game as over (no more moves can be made). Game is updated in the database.
+        //Server sends a Notification message to all clients in that game informing them that the root client resigned.
+        // This applies to both players and observers.
         var message = String.format("%s left the shop", visitorName);
         var notification = new Notification(Notification.Type.DEPARTURE, message);
         connections.broadcast(session, notification);

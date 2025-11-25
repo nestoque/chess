@@ -1,28 +1,33 @@
 package server.websocket;
 
+import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
+import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
     //organize sessions by game idea
-    public final ConcurrentHashMap<Integer, Session> connections = new ConcurrentHashMap<>();
+    public final ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
 
-    public void add(int gameID, Session session) {
-        connections.put(gameID, session);
+    public void add(String authToken, Integer gameID, Session session) {
+        Connection connection = new Connection(authToken, gameID, session);
+        connections.put(authToken, connection);
     }
 
-    public void remove(Session session) {
-        connections.remove(session);
+    public void remove(String authToken) {
+        connections.remove(authToken);
     }
 
-    public void broadcast(Session excludeSession, Notification notification) throws IOException {
+    public void broadcast(Integer targetGameID, String excludeAuthToken, ServerMessage notification) throws IOException {
         String msg = notification.toString();
-        for (Session c : connections.values()) {
-            if (c.isOpen()) {
-                if (!c.equals(excludeSession)) {
-                    c.getRemote().sendString(msg);
+        for (Connection c : connections.values()) {
+            if (c.session.isOpen()) {
+                if (c.gameID.equals(targetGameID)) {
+                    if (!c.authToken.equals(excludeAuthToken)) {
+                        c.session.getRemote().sendString(msg);
+                    }
                 }
             }
         }
