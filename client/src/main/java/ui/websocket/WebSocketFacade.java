@@ -4,6 +4,9 @@ import com.google.gson.Gson;
 import exception.ResponseException;
 
 import jakarta.websocket.*;
+import websocket.commands.ConnectCommand;
+import websocket.commands.LeaveGameCommand;
+import websocket.commands.ResignCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.ServerMessage;
 
@@ -44,18 +47,27 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-    public void enterPetShop(String visitorName) throws ResponseException {
+    public void connectWSF(String authToken, int gameID) throws ResponseException {
         try {
-            var action = new Action(Action.Type.ENTER, visitorName);
+            var action = new ConnectCommand(authToken, gameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
         } catch (IOException ex) {
             throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
         }
     }
 
-    public void leavePetShop(String visitorName) throws ResponseException {
+    public void leaveGameWSF(String authToken, int gameID) throws ResponseException {
         try {
-            var action = new Action(Action.Type.EXIT, visitorName);
+            var action = new LeaveGameCommand(authToken, gameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(action));
+        } catch (IOException ex) {
+            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
+        }
+    }
+
+    public void resignWSF(String authToken, int gameID) throws ResponseException {
+        try {
+            var action = new ResignCommand(authToken, gameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
         } catch (IOException ex) {
             throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
@@ -67,7 +79,7 @@ public class WebSocketFacade extends Endpoint {
             ServerMessage message = (new Gson()).fromJson(messageString, ServerMessage.class);
             this.notificationHandler.notify(message);
         } catch (Exception ex) {
-            this.notificationHandler.notify(new ErrorMessage(ex.gtMessage()));
+            this.notificationHandler.notify(new ErrorMessage(ex.getMessage()));
         }
     }
 

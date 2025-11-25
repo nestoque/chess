@@ -23,7 +23,7 @@ public class Repl {
         ServerFacade server = new ServerFacade(serverUrl);
         preClient = new PreLoginClient(server);
         postClient = new PostLoginClient(server, preClient);
-        gameClient = new GameClient(server, preClient, postClient);
+        gameClient = new GameClient(server, preClient, postClient, serverUrl);
         currentResult = new ReplResult("h", ReplResult.State.PRELOGIN);
     }
 

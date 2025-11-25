@@ -3,12 +3,14 @@ package ui;
 import chess.ChessBoard;
 import exception.ResponseException;
 import serverfacade.ServerFacade;
+import ui.websocket.NotificationHandler;
 import ui.websocket.WebSocketFacade;
 import websocket.messages.LoadGameMessage;
+import websocket.messages.ServerMessage;
 
 import java.util.Arrays;
 
-public class GameClient {
+public class GameClient implements NotificationHandler {
     private String authToken;
     private int joinedGame;
     private String joinedColor;
@@ -17,7 +19,7 @@ public class GameClient {
     private final PreLoginClient preClient;
     private final PostLoginClient postClient;
 
-    public GameClient(ServerFacade mainServer, PreLoginClient preClient, PostLoginClient postClient)
+    public GameClient(ServerFacade mainServer, PreLoginClient preClient, PostLoginClient postClient, String serverUrl)
             throws ResponseException {
         server = mainServer;
         this.preClient = preClient;
