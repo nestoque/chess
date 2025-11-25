@@ -1,6 +1,10 @@
 package ui;
 
 import chess.ChessBoard;
+import chess.ChessMove;
+import chess.ChessPiece;
+import chess.ChessPosition;
+import client.Repl;
 import exception.ResponseException;
 import serverfacade.ServerFacade;
 import ui.websocket.NotificationHandler;
@@ -41,7 +45,7 @@ public class GameClient implements NotificationHandler {
                 case "leave" -> leave();
                 case "m", "move" -> move(params);
                 case "resign" -> resign();
-                case "h", "hl", "highlight" -> highlight(params);
+                case "hl", "highlight" -> highlight(params);
                 case "h", "help" -> help();
                 case "q", "quit" -> new ReplResult("quit\n", ReplResult.State.POSTLOGIN);
                 default -> help();
@@ -54,16 +58,46 @@ public class GameClient implements NotificationHandler {
     private ReplResult highlight(String... params) {
     }
 
-    private ReplResult resign() {
+    private ReplResult resign() throws ResponseException {
+        ws.resignWSF(authToken, joinedGame);
+        return new ReplResult("You resigned", ReplResult.State.GAME);
+    }
+
+    private ReplResult move(String... params) throws ResponseException {
+        if (params.length >= 2) {
+            ChessPosition start = translateChessPosition(params[0]);
+            ChessPosition end = translateChessPosition(params[1]);
+            ChessPiece.PieceType promotionPiece = null;
+            if (params.length >= 3) {
+                promotionPiece = switch (params[2].toLowerCase()) {
+                    case "q", "queen" -> ChessPiece.PieceType.QUEEN;
+                    case "b", "bishop" -> ChessPiece.PieceType.BISHOP;
+                    case "n", "knight" -> ChessPiece.PieceType.KNIGHT;
+                    case "r", "rook" -> ChessPiece.PieceType.ROOK;
+                    default -> null;
+                };
+                return new ReplResult("Unknown Promotion Piece Type (queen, bishop, knight, rook)\n",
+                        ReplResult.State.GAME);
+            }
+            ws.makeMoveWSF(authToken, joinedGame, new ChessMove(start, end, promotionPiece));
+        } else {
+            return new ReplResult("""
+                        Expected m <square> <square> <OPTIONAL: promotion piece>
+                        ex: m a2 a4
+                    press q to leave game
+                    """, ReplResult.State.GAME);
+        }
+
         return null;
     }
 
-    private ReplResult move(String... params) {
-        return null;
+    private ChessPosition translateChessPosition(String param) {
+        return new ChessPosition(param.charAt(0), param.charAt(1));
     }
 
-    private ReplResult leave() {
-        return null;
+    private ReplResult leave() throws ResponseException {
+        ws.leaveGameWSF(authToken, joinedGame);
+        return new ReplResult("You left\n", ReplResult.State.POSTLOGIN);
     }
 
 
@@ -75,7 +109,7 @@ public class GameClient implements NotificationHandler {
 
     public ReplResult help() {
         return new ReplResult("""
-                Expected m <square> <square> 
+                Expected m <StartSquare> <EndSquare> <Optional: Promotion Piece> 
                     ex: m a2 a4
                 press q to leave game
                 """, ReplResult.State.GAME);
@@ -87,10 +121,21 @@ public class GameClient implements NotificationHandler {
         switch (message.getServerMessageType()) {
             case NOTIFICATION -> displayNotification(((NotificationMessage) message).getMessage());
             case ERROR -> displayError(((ErrorMessage) message).getErrorMessage());
-            case LOAD_GAME -> loadGame(((LoadGameMessage) message).getGame());
+            case LOAD_GAME -> loadGame(((LoadGameMessage) message).getGameData());
         }
     }
 
+    private void displayNotification(String message) {
+
+    }
+
+    private void displayError(String errorMsg) {
+
+    }
+
+    private void loadGame(GameData game) {
+
+    }
 }
 
 

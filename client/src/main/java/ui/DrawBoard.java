@@ -1,7 +1,9 @@
 package ui;
 
 import chess.ChessBoard;
+import chess.ChessMove;
 
+import java.util.Collection;
 import java.util.Objects;
 
 import static ui.EscapeSequences.*;
@@ -21,6 +23,46 @@ public class DrawBoard {
     private static final int LETTERLEN = LETTER_ROW.length;
 
     public static String draw(String teamColor, ChessBoard board) {
+        int startRow, endRow, drawDirection;
+        SquareColor thisSquareColor = SquareColor.WHITE;
+        int colLetterStart, colLetterEnd;
+        if (Objects.equals(teamColor, "BLACK")) {
+            startRow = MAX_ROWS - 1;
+            endRow = -1;
+            drawDirection = -1;
+            colLetterStart = LETTERLEN - 1;
+            colLetterEnd = -1;
+
+        } else {
+            startRow = 0;
+            endRow = MAX_ROWS;
+            drawDirection = 1;
+            colLetterStart = 0;
+            colLetterEnd = LETTERLEN;
+        }
+
+
+        String[] text = board.toString().replace("\n", "").substring(1).split("[|]+");
+        StringBuilder boardString = new StringBuilder();
+        for (int row = startRow; row != endRow; row += drawDirection) {
+            switch (row) {
+                case (0), (MAX_ROWS - 1) -> boardString.append(topBottom(colLetterStart, colLetterEnd, drawDirection));
+                default -> boardString.append(middleRows(row, text, thisSquareColor,
+                        startRow, endRow, drawDirection));
+            }
+            boardString.append(RESET_ALL + "\n");
+            if (thisSquareColor == SquareColor.WHITE) {
+                thisSquareColor = SquareColor.BLACK;
+            } else {
+                thisSquareColor = SquareColor.WHITE;
+            }
+        }
+
+
+        return boardString.toString();
+    }
+
+    public static String drawHighlight(String teamColor, ChessBoard board, Collection<ChessMove>) {
         int startRow, endRow, drawDirection;
         SquareColor thisSquareColor = SquareColor.WHITE;
         int colLetterStart, colLetterEnd;

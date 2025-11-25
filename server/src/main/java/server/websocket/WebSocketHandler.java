@@ -142,13 +142,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         //This applies to both players and observers.
         var message = String.format("%s left the game", username);
         GameData gameData = gameDAO.getGame(cmd.getGameID());
-        removePlayer(gameData, username);
-        var notification = new NotificationMessage(message);
-        connections.broadcast(cmd.getGameID(), session, notification);
-        connections.remove(session);
-    }
-
-    private void removePlayer(GameData gameData, String username) {
         if (gameData.whiteUsername().equals(username)) {
             gameData.setWhiteUsername(null);
             gameDAO.updateGame(gameData);
@@ -156,6 +149,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             gameData.setBlackUsername(null);
             gameDAO.updateGame(gameData);
         }
+        var notification = new NotificationMessage(message);
+        connections.broadcast(cmd.getGameID(), session, notification);
+        connections.remove(session);
     }
 
     //resign
@@ -165,8 +161,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         // This applies to both players and observers.
         GameData gameData = gameDAO.getGame(cmd.getGameID());
         gameData.game().setTeamTurn(null);
-        removePlayer(gameData, username);
-
         var message = String.format("%s resigned", username);
         var notification = new NotificationMessage(message);
         connections.broadcastAllInGame(cmd.getGameID(), notification);
