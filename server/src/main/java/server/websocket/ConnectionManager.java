@@ -32,4 +32,7 @@ public class ConnectionManager {
             }
         }
     }
+
+    public void add(int gameID, Connection connection) {
+    }
 }

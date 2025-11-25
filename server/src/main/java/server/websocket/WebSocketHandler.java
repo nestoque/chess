@@ -16,9 +16,11 @@ import object.AuthData;
 import object.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.jetbrains.annotations.NotNull;
+import service.ServiceException;
 import websocket.commands.*;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 
 import java.io.IOException;
 
@@ -57,25 +59,23 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 case LEAVE -> leaveGame(session, username, (LeaveGameCommand) command);
                 case RESIGN -> resign(session, username, (ResignCommand) command);
             }
-        } catch (UnauthorizedException ex) {
-            sendMessage(session, gameId, new ErrorMessage("Error: unauthorized"));
+        } catch (ServiceException ex) {
+            sendMessage(session, new ErrorMessage("Error: unauthorized"));
         } catch (Exception ex) {
             ex.printStackTrace();
-            sendMessage(session, gameId, new ErrorMessage("Error: " + ex.getMessage()));
+            sendMessage(session, new ErrorMessage("Error: " + ex.getMessage()));
         }
     }
 
-//    public void handleMessage(WsMessageContext ctx) {
-//        try {
-//            Action action = new Gson().fromJson(ctx.message(), Action.class);
-//            switch (action.type()) {
-//                case ENTER -> enter(action.visitorName(), ctx.session);
-//                case EXIT -> exit(action.visitorName(), ctx.session);
-//            }
-//        } catch (IOException ex) {
-//            ex.printStackTrace();
-//        }
-//    }
+    private void sendMessage(Session session, ErrorMessage errorMessage) throws IOException {
+        session.getRemote().sendString(errorMessage.getErrorMessage());
+    }
+
+    private String getUsername(String authToken) {
+        AuthDAO authDAO = new SQLAuthDAO();
+        AuthData thisAuth = authDAO.getAuth(authToken);
+        return thisAuth.username();
+    }
 
     @Override
     public void handleClose(WsCloseContext ctx) {
@@ -89,18 +89,18 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         GameData gameData = gameDAO.getGame(gameID);
         var notifyLoadGame = new LoadGameMessage(gameData);
         session.getRemote().sendString(notifyLoadGame.toString());
-        //Send connect to all
+        //Send notification connect to all
 
         AuthDAO authDAO = new SQLAuthDAO();
         AuthData thisAuth = authDAO.getAuth(authToken);
-        connections.add(gameID, new Connection(authToken, gameID, session));
+        connections.add(authToken, gameID, session);
         //check if username in game
         if (team == null) {
             team = "observer";
         }
-        var message = String.format("%s has joined as ", thisAuth.username(), team);
-        var notification = new ConnectCommand(UserGameCommand.CommandType.CONNECT, message);
-        connections.broadcast(session, notification);
+        var message = String.format("%s has joined as %s", thisAuth.username(), team);
+        var notification = new NotificationMessage(message);
+        connections.broadcast(gameID, authToken, notification);
 
 
     }
@@ -133,8 +133,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         //Server sends a Notification message to all other clients in that game informing them that the root client left.
         //This applies to both players and observers.
         var message = String.format("%s left the game", username);
-        var notification = new Notification(Notification.Type.DEPARTURE, message);
-        connections.broadcast(session, notification);
+        var notification = new NotificationMessage(message);
+        connections.broadcast(gameID, authToken, notification);
         connections.remove(session);
     }
 
