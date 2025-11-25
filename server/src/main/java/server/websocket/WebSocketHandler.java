@@ -1,5 +1,6 @@
 package server.websocket;
 
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.*;
 import exception.ResponseException;
@@ -105,22 +106,30 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     //make move
-    public void makeMove(Session session, String username, MakeMoveCommand cmd) throws ResponseException {
-        //verify move
-        //Game is updated to represent the move. Game is updated in the database.
-        //Server sends a LOAD_GAME message to all clients in the game (including the root client) with an updated game.
-        //Server sends a Notification message to all other clients in that game informing them what move was made.
-        //If the move results in check, checkmate or stalemate the server sends a Notification message to all clients.
+    public void makeMove(Session session, String username, MakeMoveCommand cmd) throws ResponseException, IOException {
 
 
         try {
-            var message = String.format("%s says %s", petName, sound);
-            var notification = new LoadGameMessage(message);
-            connections.broadcast(null, notification);
-
-            GameDAO gameDAO = new SQLGameDAO();
-            GameData gameData = gameDAO.getGame(gameID);
+            //verify move
+            //Game is updated to represent the move. Game is updated in the database.
+            GameData gameData = gameDAO.getGame(cmd.getGameID());
+            gameData.game().makeMove(cmd.getMove());
+            //Server sends a LOAD_GAME message to all clients in the game (including the root client) with an updated game.
             var notifyLoadGame = new LoadGameMessage(gameData);
+            connections.broadcastAllInGame(LoadGameMessage);
+            //Server sends a Notification message to all other clients in that game informing them what move was made.
+            var message = String.format("%s moved %s", username, cmd.getMove().toString());
+            var notification = new LoadGameMessage(gameData);
+            connections.broadcast(cmd.getGameID(), session, notification);
+            //If the move results in check, checkmate or stalemate the server sends a Notification message to all clients.
+
+            var message = String.format("%s moved %s", username, cmd.getMove().toString());
+            var notification = new LoadGameMessage(message);
+            connections.broadcast(cmd.getGameID(), session, notification);
+
+
+        } catch (InvalidMoveException ex) {
+            sendMessage(session, new ErrorMessage("Invalid Move"));
         } catch (Exception ex) {
             throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
         }
@@ -160,7 +169,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
         var message = String.format("%s resigned", username);
         var notification = new NotificationMessage(message);
-        connections.broadcast(cmd.getGameID(), session, notification);
+        connections.broadcastAllInGame(cmd.getGameID(), notification);
         connections.remove(session);
     }
 
