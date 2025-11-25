@@ -38,7 +38,7 @@ public class Repl {
                 currentResult = getResult(currentResult, line);
                 System.out.print(SET_TEXT_COLOR_BLUE + currentResult.message());
                 if (oldResult.currentState() != currentResult.currentState()) {
-                    System.out.print(SET_TEXT_COLOR_BLUE + getResult(currentResult, "h").message());
+                    System.out.print(SET_TEXT_COLOR_BLUE + getResult(currentResult, "newtab").message());
                 }
             } catch (Throwable e) {
                 System.out.print(e.getMessage());

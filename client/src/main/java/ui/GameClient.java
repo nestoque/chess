@@ -37,28 +37,46 @@ public class GameClient implements NotificationHandler {
             String cmd = (tokens.length > 0) ? tokens[0] : "help";
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
-                case "t" -> throw new ResponseException(ResponseException.Code.ClientError, "");
-                case "b", "board" -> help();
+                case "b", "board", "r", "redraw", "newtab" -> redraw();
+                case "leave" -> leave();
+                case "m", "move" -> move(params);
+                case "resign" -> resign();
+                case "h", "hl", "highlight" -> highlight(params);
                 case "h", "help" -> help();
                 case "q", "quit" -> new ReplResult("quit\n", ReplResult.State.POSTLOGIN);
-                default -> realHelp();
+                default -> help();
             };
         } catch (ResponseException ex) {
             return new ReplResult(ex.getMessage(), ReplResult.State.GAME);
         }
     }
 
+    private ReplResult highlight(String... params) {
+    }
 
-    public ReplResult help() {
+    private ReplResult resign() {
+        return null;
+    }
+
+    private ReplResult move(String... params) {
+        return null;
+    }
+
+    private ReplResult leave() {
+        return null;
+    }
+
+
+    public ReplResult redraw() {
         ChessBoard blankBoard = (new ChessBoard());
         blankBoard.resetBoard();
         return new ReplResult(DrawBoard.draw(joinedColor, blankBoard), ReplResult.State.GAME);
     }
 
-    public ReplResult realHelp() {
+    public ReplResult help() {
         return new ReplResult("""
-                Expected <square> <square> 
-                    ex: a2 a4
+                Expected m <square> <square> 
+                    ex: m a2 a4
                 press q to leave game
                 """, ReplResult.State.GAME);
     }
