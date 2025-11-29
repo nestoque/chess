@@ -2,6 +2,7 @@ package ui;
 
 import chess.ChessBoard;
 import chess.ChessMove;
+import chess.ChessPosition;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -19,10 +20,11 @@ public class DrawBoard {
     private static final String WHITE_PIECE_CLR = SET_TEXT_COLOR_BLUE;
     private static final String BLACK_SQUARE_CLR = SET_BG_COLOR_WHITE;
     private static final String BLACK_PIECE_CLR = SET_TEXT_COLOR_MAGENTA;
+    private static final String HIGHLIGHT_SQUARE_CLR = SET_BG_COLOR_GREEN;
     private static final String RESET_ALL = RESET_TEXT_COLOR + RESET_BG_COLOR;
     private static final int LETTERLEN = LETTER_ROW.length;
 
-    public static String draw(String teamColor, ChessBoard board) {
+    public static String draw(String teamColor, ChessBoard board, Collection<ChessMove> moves) {
         int startRow, endRow, drawDirection;
         SquareColor thisSquareColor = SquareColor.WHITE;
         int colLetterStart, colLetterEnd;
@@ -40,47 +42,7 @@ public class DrawBoard {
             colLetterStart = 0;
             colLetterEnd = LETTERLEN;
         }
-
-
-        String[] text = board.toString().replace("\n", "").substring(1).split("[|]+");
-        StringBuilder boardString = new StringBuilder();
-        for (int row = startRow; row != endRow; row += drawDirection) {
-            switch (row) {
-                case (0), (MAX_ROWS - 1) -> boardString.append(topBottom(colLetterStart, colLetterEnd, drawDirection));
-                default -> boardString.append(middleRows(row, text, thisSquareColor,
-                        startRow, endRow, drawDirection));
-            }
-            boardString.append(RESET_ALL + "\n");
-            if (thisSquareColor == SquareColor.WHITE) {
-                thisSquareColor = SquareColor.BLACK;
-            } else {
-                thisSquareColor = SquareColor.WHITE;
-            }
-        }
-
-
-        return boardString.toString();
-    }
-
-    public static String drawHighlight(String teamColor, ChessBoard board, Collection<ChessMove>) {
-        int startRow, endRow, drawDirection;
-        SquareColor thisSquareColor = SquareColor.WHITE;
-        int colLetterStart, colLetterEnd;
-        if (Objects.equals(teamColor, "BLACK")) {
-            startRow = MAX_ROWS - 1;
-            endRow = -1;
-            drawDirection = -1;
-            colLetterStart = LETTERLEN - 1;
-            colLetterEnd = -1;
-
-        } else {
-            startRow = 0;
-            endRow = MAX_ROWS;
-            drawDirection = 1;
-            colLetterStart = 0;
-            colLetterEnd = LETTERLEN;
-        }
-
+        boolean coveredStartPosition = false;
 
         String[] text = board.toString().replace("\n", "").substring(1).split("[|]+");
         StringBuilder boardString = new StringBuilder();
@@ -88,7 +50,7 @@ public class DrawBoard {
             switch (row) {
                 case (0), (MAX_ROWS - 1) -> boardString.append(topBottom(colLetterStart, colLetterEnd, drawDirection));
                 default -> boardString.append(middleRows(row, text, thisSquareColor,
-                        startRow, endRow, drawDirection));
+                        startRow, endRow, drawDirection, moves, coveredStartPosition));
             }
             boardString.append(RESET_ALL + "\n");
             if (thisSquareColor == SquareColor.WHITE) {
@@ -103,10 +65,15 @@ public class DrawBoard {
     }
 
     private static String getColorFormat(String piece, SquareColor thisColor) {
+        //something about
+        //for (ChessMove m : moves ) {
+        //                        if (m.getEndPosition().equals(new ChessPosition(row,col)))
+        //                    }
         String foregroundColor = (Character.isUpperCase(piece.charAt(0))) ? WHITE_PIECE_CLR : BLACK_PIECE_CLR;
         String backgroundColor = switch (thisColor) {
             case WHITE -> WHITE_SQUARE_CLR;
             case BLACK -> BLACK_SQUARE_CLR;
+            case HIGHLIGHT -> HIGHLIGHT_SQUARE_CLR;
         };
         return foregroundColor + backgroundColor;
     }
@@ -117,7 +84,8 @@ public class DrawBoard {
 
     private enum SquareColor {
         WHITE,
-        BLACK
+        BLACK,
+        HIGHLIGHT
     }
 
     private static String pickPiece(String text) {
@@ -149,7 +117,8 @@ public class DrawBoard {
     }
 
     private static String middleRows(int row, String[] text, SquareColor thisSquareColor,
-                                     int startCol, int endCol, int drawDirection) {
+                                     int startCol, int endCol, int drawDirection, Collection<ChessMove> moves,
+                                     boolean coveredStartPosition) {
         StringBuilder boardString = new StringBuilder();
         for (int col = startCol; col != endCol; col += drawDirection) {
             if (col == 0 || col == MAX_COLS - 1) {
@@ -159,7 +128,11 @@ public class DrawBoard {
                 String thisCharacter = text[(row - 1) * (MAX_COLS - 2) + (col - 1)];
 //                boardString.append(drawSquare((thisCharacter == " ") ? EMPTY : " " + thisCharacter + " ",
 //                        getColorFormat(thisCharacter, thisSquareColor)));
-                boardString.append(drawSquare(pickPiece(thisCharacter), getColorFormat(thisCharacter, thisSquareColor)));
+                if (moves != null && isHighlightSquare(row, col, moves, coveredStartPosition)) {
+                    boardString.append(drawSquare(pickPiece(thisCharacter), getColorFormat(thisCharacter, SquareColor.HIGHLIGHT)));
+                } else {
+                    boardString.append(drawSquare(pickPiece(thisCharacter), getColorFormat(thisCharacter, thisSquareColor)));
+                }
                 if (thisSquareColor == SquareColor.WHITE) {
                     thisSquareColor = SquareColor.BLACK;
                 } else {
@@ -169,6 +142,19 @@ public class DrawBoard {
 
         }
         return boardString.toString();
+    }
+
+    private static boolean isHighlightSquare(int row, int col, Collection<ChessMove> moves, boolean coveredStartPosition) {
+        if (!coveredStartPosition) {
+            ChessMove firstMove = moves.iterator().next();
+            ChessPosition firstStartPos = firstMove.getStartPosition();
+            if (firstStartPos.getRow() == row -1 && firstStartPos.getColumn() == col) {
+                coveredStartPosition
+            }
+        }
+        for (ChessMove m : moves) {
+            if (row == m.get)
+        }
     }
 
 }
