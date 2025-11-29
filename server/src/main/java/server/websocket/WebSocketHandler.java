@@ -116,7 +116,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             gameData.game().makeMove(cmd.getMove());
             //Server sends a LOAD_GAME message to all clients in the game (including the root client) with an updated game.
             var notifyLoadGame = new LoadGameMessage(gameData);
-            connections.broadcastAllInGame(LoadGameMessage);
+            connections.broadcastAllInGame(cmd.getGameID(), LoadGameMessage);
             //Server sends a Notification message to all other clients in that game informing them what move was made.
             var message = String.format("%s moved %s", username, cmd.getMove().toString());
             var notification = new LoadGameMessage(gameData);
@@ -124,7 +124,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             //If the move results in check, checkmate or stalemate the server sends a Notification message to all clients.
 
             var message = String.format("%s moved %s", username, cmd.getMove().toString());
-            var notification = new LoadGameMessage(message);
+            var notification = new NotificationMessage(message);
             connections.broadcast(cmd.getGameID(), session, notification);
 
 

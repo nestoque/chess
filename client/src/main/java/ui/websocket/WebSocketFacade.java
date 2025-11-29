@@ -10,6 +10,8 @@ import websocket.commands.LeaveGameCommand;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.ResignCommand;
 import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
@@ -35,8 +37,24 @@ public class WebSocketFacade extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
+                    // 1. Deserialize to the parent class just to get the type
                     ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
-                    notificationHandler.notify(serverMessage);
+
+                    // 2. Switch on the type and re-deserialize to the specific child class
+                    switch (serverMessage.getServerMessageType()) {
+                        case NOTIFICATION -> {
+                            NotificationMessage notification = new Gson().fromJson(message, NotificationMessage.class);
+                            notificationHandler.notify(notification);
+                        }
+                        case ERROR -> {
+                            ErrorMessage error = new Gson().fromJson(message, ErrorMessage.class);
+                            notificationHandler.notify(error);
+                        }
+                        case LOAD_GAME -> {
+                            LoadGameMessage load = new Gson().fromJson(message, LoadGameMessage.class);
+                            notificationHandler.notify(load);
+                        }
+                    }
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
