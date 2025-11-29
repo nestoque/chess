@@ -1,10 +1,6 @@
 package ui;
 
-import chess.ChessBoard;
-import chess.ChessMove;
-import chess.ChessPiece;
-import chess.ChessPosition;
-import client.Repl;
+import chess.*;
 import exception.ResponseException;
 import serverfacade.ServerFacade;
 import ui.websocket.NotificationHandler;
@@ -13,27 +9,35 @@ import websocket.messages.LoadGameMessage;
 import websocket.messages.ServerMessage;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 public class GameClient implements NotificationHandler {
     private String authToken;
     private int joinedGame;
     private String joinedColor;
     private final ServerFacade server;
-    private final WebSocketFacade ws;
+    private WebSocketFacade ws;
     private final PreLoginClient preClient;
     private final PostLoginClient postClient;
+    private final String serverUrl;
 
-    public GameClient(ServerFacade mainServer, PreLoginClient preClient, PostLoginClient postClient, String serverUrl)
+    public GameClient(ServerFacade mainServer, PreLoginClient preClient, PostLoginClient postClient, String newServerUrl)
             throws ResponseException {
         server = mainServer;
         this.preClient = preClient;
         this.postClient = postClient;
-        ws = new WebSocketFacade(serverUrl, this);
+        serverUrl = newServerUrl;
     }
 
 
     public ReplResult eval(String input) {
         try {
+            try {
+                ws.connectWSF(authToken, joinedGame, joinedColor);
+            } catch (ResponseException e) {
+                return new ReplResult("Failed to connect to game", ReplResult.State.POSTLOGIN);
+            }
+            ws = new WebSocketFacade(serverUrl, this);
             authToken = preClient.getAuthToken();
             joinedGame = postClient.getJoinedGameID();
             joinedColor = postClient.getJoinedColor();
@@ -56,6 +60,17 @@ public class GameClient implements NotificationHandler {
     }
 
     private ReplResult highlight(String... params) {
+        if (params.length >= 1) {
+            ChessPosition posForMoves = translateChessPosition(params[0]);
+            ChessGame myGame = new ChessGame();// GET GAME
+            myGame.getBoard().resetBoard();
+            return new ReplResult(DrawBoard.draw(joinedColor, myGame.getBoard(), myGame.validMoves(posForMoves)), ReplResult.State.GAME);
+        } else {
+            return new ReplResult("""
+                        Expected hl <square> 
+                        ex: hl a2
+                    """, ReplResult.State.GAME);
+        }
     }
 
     private ReplResult resign() throws ResponseException {
@@ -76,8 +91,10 @@ public class GameClient implements NotificationHandler {
                     case "r", "rook" -> ChessPiece.PieceType.ROOK;
                     default -> null;
                 };
-                return new ReplResult("Unknown Promotion Piece Type (queen, bishop, knight, rook)\n",
-                        ReplResult.State.GAME);
+                if (promotionPiece == null) {
+                    return new ReplResult("Unknown Promotion Piece Type (queen, bishop, knight, rook)\n",
+                            ReplResult.State.GAME);
+                }
             }
             ws.makeMoveWSF(authToken, joinedGame, new ChessMove(start, end, promotionPiece));
         } else {
@@ -92,7 +109,11 @@ public class GameClient implements NotificationHandler {
     }
 
     private ChessPosition translateChessPosition(String param) {
-        return new ChessPosition(param.charAt(0), param.charAt(1));
+        char colChar = param.charAt(0); // 'a'
+        char rowChar = param.charAt(1); // '2'
+        int col = colChar - 'a' + 1;
+        int row = Character.getNumericValue(rowChar);
+        return new ChessPosition(row, col);
     }
 
     private ReplResult leave() throws ResponseException {
@@ -104,7 +125,7 @@ public class GameClient implements NotificationHandler {
     public ReplResult redraw() {
         ChessBoard blankBoard = (new ChessBoard());
         blankBoard.resetBoard();
-        return new ReplResult(DrawBoard.draw(joinedColor, blankBoard), ReplResult.State.GAME);
+        return new ReplResult(DrawBoard.draw(joinedColor, blankBoard, null), ReplResult.State.GAME);
     }
 
     public ReplResult help() {
