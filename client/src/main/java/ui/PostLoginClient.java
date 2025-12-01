@@ -81,12 +81,13 @@ public class PostLoginClient {
                     }
                 }
                 server.joinGame(authToken, new JoinGameRequest(params[1].toUpperCase(), actualGameID));
+                joinedGameID = actualGameID;
                 joinedColor = params[1].toUpperCase();
                 return new ReplResult(String.format("Join Game #%s as %s.\n", params[0], params[1]), ReplResult.State.GAME);
             }
-            throw new ResponseException(ResponseException.Code.ClientError, "Expected: <Game #> <WHITE/BLACK>");
+            throw new ResponseException(ResponseException.Code.ClientError, "Expected: join <Game #> <WHITE/BLACK>");
         } catch (Exception e) {
-            throw new ResponseException(ResponseException.Code.ClientError, "Expected: <Game #> <WHITE/BLACK>" + e.getMessage());
+            throw new ResponseException(ResponseException.Code.ClientError, "Expected: join <Game #> <WHITE/BLACK>" + e.getMessage());
         }
 
 

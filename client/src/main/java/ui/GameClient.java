@@ -35,21 +35,26 @@ public class GameClient implements NotificationHandler {
         this.preClient = preClient;
         this.postClient = postClient;
         serverUrl = newServerUrl;
-        ws = new WebSocketFacade(serverUrl, this);
     }
 
 
     public ReplResult eval(String input) {
         try {
-            try {
-                ws.connectWSF(authToken, joinedGame, joinedColor);
-            } catch (ResponseException e) {
-                return new ReplResult("Failed to connect to game", ReplResult.State.POSTLOGIN);
-            }
-
             authToken = preClient.getAuthToken();
             joinedGame = postClient.getJoinedGameID();
             joinedColor = postClient.getJoinedColor();
+            try {
+                if (ws == null) {
+                    authToken = preClient.getAuthToken();
+                    joinedGame = postClient.getJoinedGameID();
+                    joinedColor = postClient.getJoinedColor();
+
+                    ws = new WebSocketFacade(serverUrl, this);
+                    ws.connectWSF(authToken, joinedGame, joinedColor);
+                }
+            } catch (ResponseException e) {
+                return new ReplResult("Failed to connect to game", ReplResult.State.POSTLOGIN);
+            }
             String[] tokens = input.toLowerCase().split(" ");
             String cmd = (tokens.length > 0) ? tokens[0] : "help";
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
@@ -147,10 +152,14 @@ public class GameClient implements NotificationHandler {
 
     @Override
     public void notify(ServerMessage message) {
-        switch (message.getServerMessageType()) {
-            case NOTIFICATION -> displayNotification(((NotificationMessage) message).getMessage());
-            case ERROR -> displayError(((ErrorMessage) message).getErrorMessage());
-            case LOAD_GAME -> loadGame(((LoadGameMessage) message).getGameData());
+        try {
+            switch (message.getServerMessageType()) {
+                case NOTIFICATION -> displayNotification(((NotificationMessage) message).getMessage());
+                case ERROR -> displayError(((ErrorMessage) message).getErrorMessage());
+                case LOAD_GAME -> loadGame(((LoadGameMessage) message).getGameData());
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
     }
 
@@ -166,7 +175,9 @@ public class GameClient implements NotificationHandler {
 
     private void loadGame(GameData game) {
         gameState = game;
-        redraw();
+        System.out.print("\n" + redraw().message());
+        System.out.print(help().message());
+        System.out.print("\n" + RESET_TEXT_COLOR + ">>> " + SET_TEXT_COLOR_GREEN);
     }
 }
 

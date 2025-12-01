@@ -2,6 +2,7 @@ package ui.websocket;
 
 import chess.ChessMove;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import exception.ResponseException;
 
 import jakarta.websocket.*;
@@ -37,23 +38,24 @@ public class WebSocketFacade extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-                    // 1. Deserialize to the parent class just to get the type
-                    ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
-
-                    // 2. Switch on the type and re-deserialize to the specific child class
-                    switch (serverMessage.getServerMessageType()) {
-                        case NOTIFICATION -> {
-                            NotificationMessage notification = new Gson().fromJson(message, NotificationMessage.class);
-                            notificationHandler.notify(notification);
+                    try {
+                        ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
+                        switch (serverMessage.getServerMessageType()) {
+                            case NOTIFICATION -> {
+                                NotificationMessage notification = new Gson().fromJson(message, NotificationMessage.class);
+                                notificationHandler.notify(notification);
+                            }
+                            case ERROR -> {
+                                ErrorMessage error = new Gson().fromJson(message, ErrorMessage.class);
+                                notificationHandler.notify(error);
+                            }
+                            case LOAD_GAME -> {
+                                LoadGameMessage load = new Gson().fromJson(message, LoadGameMessage.class);
+                                notificationHandler.notify(load);
+                            }
                         }
-                        case ERROR -> {
-                            ErrorMessage error = new Gson().fromJson(message, ErrorMessage.class);
-                            notificationHandler.notify(error);
-                        }
-                        case LOAD_GAME -> {
-                            LoadGameMessage load = new Gson().fromJson(message, LoadGameMessage.class);
-                            notificationHandler.notify(load);
-                        }
+                    } catch (JsonSyntaxException e) {
+                        System.out.println(e.getMessage());
                     }
                 }
             });
@@ -70,7 +72,7 @@ public class WebSocketFacade extends Endpoint {
     public void connectWSF(String authToken, int gameID, String team) throws ResponseException {
         try {
             var action = new ConnectCommand(authToken, gameID, team);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action));
+            this.session.getBasicRemote().sendText(new Gson().toJson(action, ConnectCommand.class));
         } catch (IOException ex) {
             throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
         }
@@ -79,7 +81,7 @@ public class WebSocketFacade extends Endpoint {
     public void leaveGameWSF(String authToken, int gameID) throws ResponseException {
         try {
             var action = new LeaveGameCommand(authToken, gameID);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action));
+            this.session.getBasicRemote().sendText(new Gson().toJson(action, LeaveGameCommand.class));
         } catch (IOException ex) {
             throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
         }
@@ -88,7 +90,7 @@ public class WebSocketFacade extends Endpoint {
     public void resignWSF(String authToken, int gameID) throws ResponseException {
         try {
             var action = new ResignCommand(authToken, gameID);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action));
+            this.session.getBasicRemote().sendText(new Gson().toJson(action, ResignCommand.class));
         } catch (IOException ex) {
             throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
         }
@@ -97,7 +99,7 @@ public class WebSocketFacade extends Endpoint {
     public void makeMoveWSF(String authToken, int gameID, ChessMove move) throws ResponseException {
         try {
             var action = new MakeMoveCommand(authToken, gameID, move);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action));
+            this.session.getBasicRemote().sendText(new Gson().toJson(action, MakeMoveCommand.class));
         } catch (IOException ex) {
             throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
         }

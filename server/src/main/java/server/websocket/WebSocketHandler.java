@@ -124,11 +124,15 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             ChessGame.TeamColor checkCheck =
                     (gameData.whiteUsername().equals(username)) ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
             if (gameData.game().isInCheckmate(checkCheck)) {
-                var checkMessage = String.format("%s moved %s", username, cmd.getMove().toString());
+                var checkMessage = String.format("%s checkmated %s", username, cmd.getMove().toString());
                 var checkNotification = new NotificationMessage(checkMessage);
                 connections.broadcast(cmd.getGameID(), session, checkNotification);
+                //mark game as done
             } else if (gameData.game().isInStalemate(checkCheck)) {
-
+                var checkMessage = String.format("%s is in stalemate", username, cmd.getMove().toString());
+                var checkNotification = new NotificationMessage(checkMessage);
+                connections.broadcast(cmd.getGameID(), session, checkNotification);
+                //mark game as done
             }
 
         } catch (InvalidMoveException ex) {
@@ -164,6 +168,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         // This applies to both players and observers.
         GameData gameData = gameDAO.getGame(cmd.getGameID());
         gameData.game().setTeamTurn(null);
+        //mark game as done
         var message = String.format("%s resigned", username);
         var notification = new NotificationMessage(message);
         connections.broadcastAllInGame(cmd.getGameID(), notification);
