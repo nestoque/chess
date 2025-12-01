@@ -1,16 +1,15 @@
 package server.websocket;
 
+import chess.ChessGame;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.*;
 import exception.ResponseException;
-import io.javalin.http.UnauthorizedResponse;
 import io.javalin.websocket.*;
 import object.AuthData;
 import object.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.jetbrains.annotations.NotNull;
-import service.ServiceException;
 import websocket.commands.*;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
@@ -116,17 +115,21 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             gameData.game().makeMove(cmd.getMove());
             //Server sends a LOAD_GAME message to all clients in the game (including the root client) with an updated game.
             var notifyLoadGame = new LoadGameMessage(gameData);
-            connections.broadcastAllInGame(cmd.getGameID(), LoadGameMessage);
+            connections.broadcastAllInGame(cmd.getGameID(), notifyLoadGame);
             //Server sends a Notification message to all other clients in that game informing them what move was made.
             var message = String.format("%s moved %s", username, cmd.getMove().toString());
             var notification = new LoadGameMessage(gameData);
             connections.broadcast(cmd.getGameID(), session, notification);
             //If the move results in check, checkmate or stalemate the server sends a Notification message to all clients.
+            ChessGame.TeamColor checkCheck =
+                    (gameData.whiteUsername().equals(username)) ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+            if (gameData.game().isInCheckmate(checkCheck)) {
+                var checkMessage = String.format("%s moved %s", username, cmd.getMove().toString());
+                var checkNotification = new NotificationMessage(checkMessage);
+                connections.broadcast(cmd.getGameID(), session, checkNotification);
+            } else if (gameData.game().isInStalemate(checkCheck)) {
 
-            var message = String.format("%s moved %s", username, cmd.getMove().toString());
-            var notification = new NotificationMessage(message);
-            connections.broadcast(cmd.getGameID(), session, notification);
-
+            }
 
         } catch (InvalidMoveException ex) {
             sendMessage(session, new ErrorMessage("Invalid Move"));

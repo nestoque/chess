@@ -148,12 +148,8 @@ public class DrawBoard {
                                              String teamColor) {
 
         //Translate To ChessPosition Number System
-        int absRow = row - 1;
-        int absCol = col - 1;
-        if (Objects.equals(teamColor, "BLACK")) {
-            absRow = 8 - row;
-            absCol = 8 - col;
-        }
+        int absRow = 9 - row;
+        int absCol = col;
         if (!coveredStartPosition[0]) {
             ChessMove firstMove = moves.iterator().next();
             ChessPosition firstStartPos = firstMove.getStartPosition();
@@ -165,7 +161,6 @@ public class DrawBoard {
         for (ChessMove m : moves) {
             ChessPosition endPos = m.getEndPosition();
             if (endPos.getRow() == absRow && endPos.getColumn() == absCol) {
-                coveredStartPosition[0] = true;
                 return true;
             }
         }

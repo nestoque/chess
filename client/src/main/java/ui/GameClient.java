@@ -2,14 +2,21 @@ package ui;
 
 import chess.*;
 import exception.ResponseException;
+import object.GameData;
 import serverfacade.ServerFacade;
 import ui.websocket.NotificationHandler;
 import ui.websocket.WebSocketFacade;
+import ui.EscapeSequences.*;
+import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 import java.util.Arrays;
 import java.util.Collection;
+
+import static ui.EscapeSequences.*;
+import static ui.EscapeSequences.SET_TEXT_COLOR_GREEN;
 
 public class GameClient implements NotificationHandler {
     private String authToken;
@@ -20,6 +27,7 @@ public class GameClient implements NotificationHandler {
     private final PreLoginClient preClient;
     private final PostLoginClient postClient;
     private final String serverUrl;
+    private GameData gameState;
 
     public GameClient(ServerFacade mainServer, PreLoginClient preClient, PostLoginClient postClient, String newServerUrl)
             throws ResponseException {
@@ -27,6 +35,7 @@ public class GameClient implements NotificationHandler {
         this.preClient = preClient;
         this.postClient = postClient;
         serverUrl = newServerUrl;
+        ws = new WebSocketFacade(serverUrl, this);
     }
 
 
@@ -37,7 +46,7 @@ public class GameClient implements NotificationHandler {
             } catch (ResponseException e) {
                 return new ReplResult("Failed to connect to game", ReplResult.State.POSTLOGIN);
             }
-            ws = new WebSocketFacade(serverUrl, this);
+
             authToken = preClient.getAuthToken();
             joinedGame = postClient.getJoinedGameID();
             joinedColor = postClient.getJoinedColor();
@@ -45,12 +54,13 @@ public class GameClient implements NotificationHandler {
             String cmd = (tokens.length > 0) ? tokens[0] : "help";
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
-                case "b", "board", "r", "redraw", "newtab" -> redraw();
+                case "b", "board", "r", "redraw" -> redraw();
                 case "leave" -> leave();
                 case "m", "move" -> move(params);
                 case "resign" -> resign();
                 case "hl", "highlight" -> highlight(params);
                 case "h", "help" -> help();
+                case "newtab" -> new ReplResult("Joined\n", ReplResult.State.GAME);
                 case "q", "quit" -> new ReplResult("quit\n", ReplResult.State.POSTLOGIN);
                 default -> help();
             };
@@ -123,9 +133,7 @@ public class GameClient implements NotificationHandler {
 
 
     public ReplResult redraw() {
-        ChessBoard blankBoard = (new ChessBoard());
-        blankBoard.resetBoard();
-        return new ReplResult(DrawBoard.draw(joinedColor, blankBoard, null), ReplResult.State.GAME);
+        return new ReplResult(DrawBoard.draw(joinedColor, gameState.game().getBoard(), null), ReplResult.State.GAME);
     }
 
     public ReplResult help() {
@@ -147,15 +155,18 @@ public class GameClient implements NotificationHandler {
     }
 
     private void displayNotification(String message) {
-
+        System.out.println(SET_TEXT_COLOR_MAGENTA + message);
+        System.out.print("\n" + RESET_TEXT_COLOR + ">>> " + SET_TEXT_COLOR_GREEN);
     }
 
     private void displayError(String errorMsg) {
-
+        System.out.println(SET_TEXT_COLOR_RED + errorMsg);
+        System.out.print("\n" + RESET_TEXT_COLOR + ">>> " + SET_TEXT_COLOR_GREEN);
     }
 
     private void loadGame(GameData game) {
-
+        gameState = game;
+        redraw();
     }
 }
 
