@@ -41,7 +41,8 @@ public class Repl {
                     System.out.print(SET_TEXT_COLOR_BLUE + getResult(currentResult, "newtab").message());
                 }
             } catch (Throwable e) {
-                System.out.print(e.getMessage());
+                System.out.print("\n" + e.getMessage());
+                printPrompt();
             }
         }
         System.out.println();

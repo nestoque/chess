@@ -65,11 +65,11 @@ public class GameClient implements NotificationHandler {
                 case "resign" -> resign();
                 case "hl", "highlight" -> highlight(params);
                 case "h", "help" -> help();
-                case "newtab" -> new ReplResult("Joined\n", ReplResult.State.GAME);
+                case "newtab" -> new ReplResult("", ReplResult.State.GAME);
                 case "q", "quit" -> new ReplResult("quit\n", ReplResult.State.POSTLOGIN);
                 default -> help();
             };
-        } catch (ResponseException ex) {
+        } catch (Exception ex) {
             return new ReplResult(ex.getMessage(), ReplResult.State.GAME);
         }
     }
@@ -94,6 +94,12 @@ public class GameClient implements NotificationHandler {
     }
 
     private ReplResult move(String... params) throws ResponseException {
+        if (joinedColor == null || joinedColor.equals("BLACK") && gameState.game().getTeamTurn() != ChessGame.TeamColor.BLACK ||
+                joinedColor.equals("WHITE") && gameState.game().getTeamTurn() != ChessGame.TeamColor.WHITE) {
+            return new ReplResult(String.format("%s's Turn",
+                    gameState.game().getTeamTurn().equals(ChessGame.TeamColor.BLACK) ? "black" : "white"),
+                    ReplResult.State.GAME);
+        }
         if (params.length >= 2) {
             ChessPosition start = translateChessPosition(params[0]);
             ChessPosition end = translateChessPosition(params[1]);
@@ -120,7 +126,8 @@ public class GameClient implements NotificationHandler {
                     """, ReplResult.State.GAME);
         }
 
-        return null;
+        return new ReplResult(String.format("You moved %s to %s", params[0], params[1]),
+                ReplResult.State.GAME);
     }
 
     private ChessPosition translateChessPosition(String param) {
@@ -159,17 +166,18 @@ public class GameClient implements NotificationHandler {
                 case LOAD_GAME -> loadGame(((LoadGameMessage) message).getGameData());
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println("\n" + SET_TEXT_COLOR_RED + e.getMessage());
+            System.out.print("\n" + RESET_TEXT_COLOR + ">>> " + SET_TEXT_COLOR_GREEN);
         }
     }
 
     private void displayNotification(String message) {
-        System.out.println(SET_TEXT_COLOR_MAGENTA + message);
+        System.out.println("\n" + SET_TEXT_COLOR_MAGENTA + message);
         System.out.print("\n" + RESET_TEXT_COLOR + ">>> " + SET_TEXT_COLOR_GREEN);
     }
 
     private void displayError(String errorMsg) {
-        System.out.println(SET_TEXT_COLOR_RED + errorMsg);
+        System.out.println("\n" + SET_TEXT_COLOR_RED + errorMsg);
         System.out.print("\n" + RESET_TEXT_COLOR + ">>> " + SET_TEXT_COLOR_GREEN);
     }
 

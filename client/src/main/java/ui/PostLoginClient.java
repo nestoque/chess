@@ -80,6 +80,9 @@ public class PostLoginClient {
                         cnt++;
                     }
                 }
+                if (actualGameID == -1) {
+                    return new ReplResult("Invalid Game #", ReplResult.State.POSTLOGIN);
+                }
                 server.joinGame(authToken, new JoinGameRequest(params[1].toUpperCase(), actualGameID));
                 joinedGameID = actualGameID;
                 joinedColor = params[1].toUpperCase();
@@ -87,7 +90,7 @@ public class PostLoginClient {
             }
             throw new ResponseException(ResponseException.Code.ClientError, "Expected: join <Game #> <WHITE/BLACK>");
         } catch (Exception e) {
-            throw new ResponseException(ResponseException.Code.ClientError, "Expected: join <Game #> <WHITE/BLACK>" + e.getMessage());
+            throw new ResponseException(ResponseException.Code.ClientError, e.getMessage());
         }
 
 
@@ -109,6 +112,7 @@ public class PostLoginClient {
                     }
                 }
                 joinedColor = null;
+                joinedGameID = actualGameID;
                 return new ReplResult(String.format("observing Game # %s.\n", actualGameID), ReplResult.State.GAME);
             }
             throw new ResponseException(ResponseException.Code.ClientError, "Expected: <Game #>");

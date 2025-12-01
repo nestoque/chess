@@ -17,8 +17,6 @@ import websocket.messages.NotificationMessage;
 
 import java.io.IOException;
 
-import static javax.management.remote.JMXConnectorFactory.connect;
-
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
     private final ConnectionManager connections = new ConnectionManager();
@@ -72,7 +70,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void sendMessage(Session session, ErrorMessage errorMessage) throws IOException {
-        session.getRemote().sendString(errorMessage.getErrorMessage());
+        session.getRemote().sendString(errorMessage.toString());
     }
 
     private String getUsername(String authToken) throws UnauthorizedException {
@@ -92,6 +90,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void connect(Session session, String username, ConnectCommand cmd) throws IOException {
         //Send load game back
         GameData gameData = gameDAO.getGame(cmd.getGameID());
+        if (gameData == null) {
+            session.getRemote().sendString((new ErrorMessage("Invalid Game")).toString());
+            return;
+        }
         var notifyLoadGame = new LoadGameMessage(gameData);
         session.getRemote().sendString(notifyLoadGame.toString());
         //Send notification connect to all
@@ -172,7 +174,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         var message = String.format("%s resigned", username);
         var notification = new NotificationMessage(message);
         connections.broadcastAllInGame(cmd.getGameID(), notification);
-        connections.remove(session);
     }
 
 

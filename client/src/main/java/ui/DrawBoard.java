@@ -28,7 +28,7 @@ public class DrawBoard {
         int startRow, endRow, drawDirection;
         SquareColor thisSquareColor = SquareColor.WHITE;
         int colLetterStart, colLetterEnd;
-        if (Objects.equals(teamColor, "BLACK")) {
+        if (teamColor != null && Objects.equals(teamColor, "BLACK")) {
             startRow = MAX_ROWS - 1;
             endRow = -1;
             drawDirection = -1;
@@ -50,7 +50,7 @@ public class DrawBoard {
             switch (row) {
                 case (0), (MAX_ROWS - 1) -> boardString.append(topBottom(colLetterStart, colLetterEnd, drawDirection));
                 default -> boardString.append(middleRows(row, text, thisSquareColor,
-                        startRow, endRow, drawDirection, moves, coveredStartPosition, teamColor));
+                        startRow, endRow, drawDirection, moves, coveredStartPosition));
             }
             boardString.append(RESET_ALL + "\n");
             if (thisSquareColor == SquareColor.WHITE) {
@@ -118,7 +118,7 @@ public class DrawBoard {
 
     private static String middleRows(int row, String[] text, SquareColor thisSquareColor,
                                      int startCol, int endCol, int drawDirection, Collection<ChessMove> moves,
-                                     boolean[] coveredStartPosition, String teamColor) {
+                                     boolean[] coveredStartPosition) {
         StringBuilder boardString = new StringBuilder();
         for (int col = startCol; col != endCol; col += drawDirection) {
             if (col == 0 || col == MAX_COLS - 1) {
@@ -128,7 +128,7 @@ public class DrawBoard {
                 String thisCharacter = text[(row - 1) * (MAX_COLS - 2) + (col - 1)];
 //                boardString.append(drawSquare((thisCharacter == " ") ? EMPTY : " " + thisCharacter + " ",
 //                        getColorFormat(thisCharacter, thisSquareColor)));
-                if (moves != null && isHighlightSquare(row, col, moves, coveredStartPosition, teamColor)) {
+                if (moves != null && isHighlightSquare(row, col, moves, coveredStartPosition)) {
                     boardString.append(drawSquare(pickPiece(thisCharacter), getColorFormat(thisCharacter, SquareColor.HIGHLIGHT)));
                 } else {
                     boardString.append(drawSquare(pickPiece(thisCharacter), getColorFormat(thisCharacter, thisSquareColor)));
@@ -144,8 +144,7 @@ public class DrawBoard {
         return boardString.toString();
     }
 
-    private static boolean isHighlightSquare(int row, int col, Collection<ChessMove> moves, boolean[] coveredStartPosition,
-                                             String teamColor) {
+    private static boolean isHighlightSquare(int row, int col, Collection<ChessMove> moves, boolean[] coveredStartPosition) {
 
         //Translate To ChessPosition Number System
         int absRow = 9 - row;
