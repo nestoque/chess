@@ -14,6 +14,7 @@ import websocket.commands.*;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 
@@ -114,26 +115,38 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             //verify move
             //Game is updated to represent the move. Game is updated in the database.
             GameData gameData = gameDAO.getGame(cmd.getGameID());
+            ChessGame.TeamColor checkCheck =
+                    (gameData.whiteUsername().equals(username)) ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+            if (gameData.game().isEndGame()) {
+                var notification = new ErrorMessage("Unable to move: Game already over");
+                sendMessage(session, notification);
+                return;
+            }
+            if (checkCheck.equals(gameData.game().getBoard().getPiece(cmd.getMove().getStartPosition()).getTeamColor())) {
+                var notification = new ErrorMessage("Unable to move: not your turn");
+                sendMessage(session, notification);
+                return;
+            }
+
             gameData.game().makeMove(cmd.getMove());
+            gameDAO.updateGame(gameData);
             //Server sends a LOAD_GAME message to all clients in the game (including the root client) with an updated game.
             var notifyLoadGame = new LoadGameMessage(gameData);
             connections.broadcastAllInGame(cmd.getGameID(), notifyLoadGame);
             //Server sends a Notification message to all other clients in that game informing them what move was made.
             var message = String.format("%s moved %s", username, cmd.getMove().toString());
-            var notification = new LoadGameMessage(gameData);
+            var notification = new NotificationMessage(message);
             connections.broadcast(cmd.getGameID(), session, notification);
             //If the move results in check, checkmate or stalemate the server sends a Notification message to all clients.
-            ChessGame.TeamColor checkCheck =
-                    (gameData.whiteUsername().equals(username)) ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
             if (gameData.game().isInCheckmate(checkCheck)) {
                 var checkMessage = String.format("%s checkmated %s", username, cmd.getMove().toString());
                 var checkNotification = new NotificationMessage(checkMessage);
-                connections.broadcast(cmd.getGameID(), session, checkNotification);
+                connections.broadcastAllInGame(cmd.getGameID(), checkNotification);
                 //mark game as done
             } else if (gameData.game().isInStalemate(checkCheck)) {
                 var checkMessage = String.format("%s is in stalemate", username, cmd.getMove().toString());
                 var checkNotification = new NotificationMessage(checkMessage);
-                connections.broadcast(cmd.getGameID(), session, checkNotification);
+                connections.broadcastAllInGame(cmd.getGameID(), checkNotification);
                 //mark game as done
             }
 
@@ -152,10 +165,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         var message = String.format("%s left the game", username);
         GameData gameData = gameDAO.getGame(cmd.getGameID());
         if (gameData.whiteUsername().equals(username)) {
-            gameData.setWhiteUsername(null);
+            gameData = gameData.setWhiteUsername(null);
             gameDAO.updateGame(gameData);
         } else if (gameData.blackUsername().equals(username)) {
-            gameData.setBlackUsername(null);
+            gameData = gameData.setBlackUsername(null);
             gameDAO.updateGame(gameData);
         }
         var notification = new NotificationMessage(message);
@@ -169,8 +182,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         //Server sends a Notification message to all clients in that game informing them that the root client resigned.
         // This applies to both players and observers.
         GameData gameData = gameDAO.getGame(cmd.getGameID());
-        gameData.game().setTeamTurn(null);
-        //mark game as done
+        gameData.game().setEndGame();
+        gameDAO.updateGame(gameData);
         var message = String.format("%s resigned", username);
         var notification = new NotificationMessage(message);
         connections.broadcastAllInGame(cmd.getGameID(), notification);

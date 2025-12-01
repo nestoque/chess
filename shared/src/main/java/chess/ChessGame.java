@@ -43,6 +43,7 @@ public class ChessGame {
     boolean[] queensideCastlePiecesHaventMoved; // use teamColor enum for indices
     boolean[] kingsideCastlePiecesHaventMoved;
     ChessMove lastMove; //for en_passant calculations
+    private boolean endGame;
 
     public ChessGame() {
         teamTurn = TeamColor.WHITE;
@@ -51,6 +52,7 @@ public class ChessGame {
         queensideCastlePiecesHaventMoved = new boolean[]{true, true};
         kingsideCastlePiecesHaventMoved = new boolean[]{true, true};
         lastMove = null;
+        endGame = false;
     }
 
     /**
@@ -67,6 +69,14 @@ public class ChessGame {
      */
     public void setTeamTurn(TeamColor team) {
         teamTurn = team;
+    }
+
+    public boolean isEndGame() {
+        return endGame;
+    }
+
+    public void setEndGame() {
+        this.endGame = true;
     }
 
     /**
