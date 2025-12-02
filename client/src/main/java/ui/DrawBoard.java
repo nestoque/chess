@@ -65,10 +65,6 @@ public class DrawBoard {
     }
 
     private static String getColorFormat(String piece, SquareColor thisColor) {
-        //something about
-        //for (ChessMove m : moves ) {
-        //                        if (m.getEndPosition().equals(new ChessPosition(row,col)))
-        //                    }
         String foregroundColor = (Character.isUpperCase(piece.charAt(0))) ? WHITE_PIECE_CLR : BLACK_PIECE_CLR;
         String backgroundColor = switch (thisColor) {
             case WHITE -> WHITE_SQUARE_CLR;

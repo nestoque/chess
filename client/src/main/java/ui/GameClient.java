@@ -110,14 +110,15 @@ public class GameClient implements NotificationHandler {
         if (tokens[0].equals("y")) {
             ws.resignWSF(authToken, joinedGame);
             Thread.sleep(500);
-            return new ReplResult("You resigned", ReplResult.State.GAME);
+            return new ReplResult("",
+                    ReplResult.State.GAME);
         }
         return new ReplResult("You did not resign", ReplResult.State.GAME);
     }
 
     private ReplResult move(String... params) throws ResponseException, InterruptedException {
         if (gameState.game().isEndGame()) {
-            return new ReplResult(SET_BG_COLOR_RED + "Unable to move: Game already over", ReplResult.State.GAME);
+            return new ReplResult(SET_TEXT_COLOR_RED + "Unable to move: Game already over", ReplResult.State.GAME);
         }
         if (joinedColor == null || joinedColor.equals("BLACK") && gameState.game().getTeamTurn() != ChessGame.TeamColor.BLACK ||
                 joinedColor.equals("WHITE") && gameState.game().getTeamTurn() != ChessGame.TeamColor.WHITE) {
@@ -151,7 +152,7 @@ public class GameClient implements NotificationHandler {
                     """, ReplResult.State.GAME);
         }
         Thread.sleep(500);
-        return new ReplResult(String.format("You moved %s to %s", params[0], params[1]),
+        return new ReplResult("",
                 ReplResult.State.GAME);
     }
 
@@ -166,7 +167,8 @@ public class GameClient implements NotificationHandler {
     private ReplResult leave() throws ResponseException {
         ws.leaveGameWSF(authToken, joinedGame);
         ws = null;
-        return new ReplResult("You left\n", ReplResult.State.POSTLOGIN);
+        return new ReplResult("",
+                ReplResult.State.POSTLOGIN);
     }
 
 
@@ -207,7 +209,6 @@ public class GameClient implements NotificationHandler {
 
     private void displayError(String errorMsg) {
         System.out.println("\n" + SET_TEXT_COLOR_RED + errorMsg);
-        mainREPL.printPrompt(ReplResult.State.GAME);
     }
 
     private void loadGame(GameData game) {

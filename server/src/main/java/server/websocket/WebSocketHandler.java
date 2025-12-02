@@ -16,17 +16,15 @@ import websocket.commands.*;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
-import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
     private final ConnectionManager connections = new ConnectionManager();
-    private static final GameDAO gameDAO = new SQLGameDAO();
-    private static final UserDAO userDAO = new SQLUserDAO();
-    private static final AuthDAO authDAO = new SQLAuthDAO();
-    private static final Gson gson = new Gson();
+    private final GameDAO gameDAO = new SQLGameDAO();
+    private final AuthDAO authDAO = new SQLAuthDAO();
+    private final Gson gson = new Gson();
 
     @Override
     public void handleConnect(WsConnectContext ctx) {
