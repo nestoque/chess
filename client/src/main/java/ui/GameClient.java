@@ -13,6 +13,7 @@ import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Scanner;
@@ -87,9 +88,7 @@ public class GameClient implements NotificationHandler {
     private ReplResult highlight(String... params) {
         if (params.length >= 1) {
             ChessPosition posForMoves = translateChessPosition(params[0]);
-            ChessGame myGame = new ChessGame();// GET GAME
-            myGame.getBoard().resetBoard();
-            return new ReplResult(DrawBoard.draw(joinedColor, myGame.getBoard(), myGame.validMoves(posForMoves)), ReplResult.State.GAME);
+            return new ReplResult(DrawBoard.draw(joinedColor, gameState.game().getBoard(), gameState.game().validMoves(posForMoves)), ReplResult.State.GAME);
         } else {
             return new ReplResult("""
                         Expected hl <square> 
@@ -122,7 +121,7 @@ public class GameClient implements NotificationHandler {
         }
         if (joinedColor == null || joinedColor.equals("BLACK") && gameState.game().getTeamTurn() != ChessGame.TeamColor.BLACK ||
                 joinedColor.equals("WHITE") && gameState.game().getTeamTurn() != ChessGame.TeamColor.WHITE) {
-            return new ReplResult(String.format(SET_BG_COLOR_RED + "%s's Turn",
+            return new ReplResult(String.format(SET_TEXT_COLOR_RED + "%s's Turn",
                     gameState.game().getTeamTurn().equals(ChessGame.TeamColor.BLACK) ? "black" : "white"),
                     ReplResult.State.GAME);
         }
@@ -173,7 +172,7 @@ public class GameClient implements NotificationHandler {
 
 
     public ReplResult redraw() {
-        return new ReplResult(DrawBoard.draw(joinedColor, gameState.game().getBoard(), null), ReplResult.State.GAME);
+        return new ReplResult(DrawBoard.draw(joinedColor, gameState.game().getBoard(), new ArrayList<>()), ReplResult.State.GAME);
     }
 
     public ReplResult help() {

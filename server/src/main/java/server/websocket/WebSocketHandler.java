@@ -1,9 +1,6 @@
 package server.websocket;
 
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPosition;
-import chess.InvalidMoveException;
+import chess.*;
 import com.google.gson.Gson;
 import dataaccess.*;
 import exception.ResponseException;
@@ -123,13 +120,31 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 sendMessage(session, notification);
                 return;
             }
-            if (checkCheck.equals(gameData.game().getBoard().getPiece(cmd.getMove().getStartPosition()).getTeamColor())) {
+            ChessPiece movedPiece = gameData.game().getBoard().getPiece(cmd.getMove().getStartPosition());
+            if (movedPiece == null) {
+                var notification = new ErrorMessage("Unable to move: no piece at given start square");
+                sendMessage(session, notification);
+                return;
+            } else if (checkCheck.equals(movedPiece.getTeamColor())) {
+                var notification = new ErrorMessage("Unable to move: not your piece");
+                sendMessage(session, notification);
+                return;
+            } else if (gameData.game().getTeamTurn() == checkCheck) {
                 var notification = new ErrorMessage("Unable to move: not your turn");
                 sendMessage(session, notification);
                 return;
             }
-
             gameData.game().makeMove(cmd.getMove());
+            String checkMessage = "";
+            if (gameData.game().isInCheckmate(checkCheck)) {
+                checkMessage = String.format("%s checkmated %s", username, oppositeUsername); //add other username
+                gameData.game().setEndGame();
+            } else if (gameData.game().isInStalemate(checkCheck)) {
+                checkMessage = String.format("%s is in stalemate: game ends in a draw", oppositeUsername);
+                gameData.game().setEndGame();
+            } else if (gameData.game().isInCheck(checkCheck)) {
+                checkMessage = String.format("%s is in check", oppositeUsername);
+            }
             gameDAO.updateGame(gameData);
             //Server sends a LOAD_GAME message to all clients in the game (including the root client) with an updated game.
             var notifyLoadGame = new LoadGameMessage(gameData);
@@ -139,24 +154,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             var notification = new NotificationMessage(message);
             connections.broadcast(cmd.getGameID(), session, notification);
             //If the move results in check, checkmate or stalemate the server sends a Notification message to all clients.
-            if (gameData.game().isInCheckmate(checkCheck)) {
-                var checkMessage = String.format("%s checkmated %s", username, oppositeUsername); //add other username
-                var checkNotification = new NotificationMessage(checkMessage);
-                connections.broadcastAllInGame(cmd.getGameID(), checkNotification);
-                gameData.game().setEndGame();
-                gameDAO.updateGame(gameData);
-            } else if (gameData.game().isInStalemate(checkCheck)) {
-                var checkMessage = String.format("%s is in stalemate: game ends in a draw", oppositeUsername);
-                var checkNotification = new NotificationMessage(checkMessage);
-                connections.broadcastAllInGame(cmd.getGameID(), checkNotification);
-                gameData.game().setEndGame();
-                gameDAO.updateGame(gameData);
-            } else if (gameData.game().isInCheck(checkCheck)) {
-                var checkMessage = String.format("%s is in check", oppositeUsername);
+            if (!checkMessage.isEmpty()) {
                 var checkNotification = new NotificationMessage(checkMessage);
                 connections.broadcastAllInGame(cmd.getGameID(), checkNotification);
             }
-
         } catch (InvalidMoveException ex) {
             sendMessage(session, new ErrorMessage("Invalid Move"));
         } catch (Exception ex) {

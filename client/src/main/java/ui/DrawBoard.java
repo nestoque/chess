@@ -4,6 +4,7 @@ import chess.ChessBoard;
 import chess.ChessMove;
 import chess.ChessPosition;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -124,7 +125,7 @@ public class DrawBoard {
                 String thisCharacter = text[(row - 1) * (MAX_COLS - 2) + (col - 1)];
 //                boardString.append(drawSquare((thisCharacter == " ") ? EMPTY : " " + thisCharacter + " ",
 //                        getColorFormat(thisCharacter, thisSquareColor)));
-                if (moves != null && isHighlightSquare(row, col, moves, coveredStartPosition)) {
+                if (!moves.equals(new ArrayList<>()) && isHighlightSquare(row, col, moves, coveredStartPosition)) {
                     boardString.append(drawSquare(pickPiece(thisCharacter), getColorFormat(thisCharacter, SquareColor.HIGHLIGHT)));
                 } else {
                     boardString.append(drawSquare(pickPiece(thisCharacter), getColorFormat(thisCharacter, thisSquareColor)));
