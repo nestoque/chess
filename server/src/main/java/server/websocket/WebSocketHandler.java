@@ -158,7 +158,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 var checkNotification = new NotificationMessage(checkMessage);
                 connections.broadcastAllInGame(cmd.getGameID(), checkNotification);
             }
-        } catch (InvalidMoveException ex) {
+        } catch (InvalidMoveException | ArrayIndexOutOfBoundsException ex) {
             sendMessage(session, new ErrorMessage("Invalid Move"));
         } catch (Exception ex) {
             throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
