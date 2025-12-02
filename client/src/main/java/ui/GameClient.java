@@ -88,7 +88,8 @@ public class GameClient implements NotificationHandler {
     private ReplResult highlight(String... params) {
         if (params.length >= 1) {
             ChessPosition posForMoves = translateChessPosition(params[0]);
-            return new ReplResult(DrawBoard.draw(joinedColor, gameState.game().getBoard(), gameState.game().validMoves(posForMoves)), ReplResult.State.GAME);
+            return new ReplResult(DrawBoard.draw(joinedColor, gameState.game().getBoard(),
+                    gameState.game().validMoves(posForMoves)), ReplResult.State.GAME);
         } else {
             return new ReplResult("""
                         Expected hl <square> 
