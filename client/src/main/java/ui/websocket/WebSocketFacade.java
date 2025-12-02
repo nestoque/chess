@@ -49,39 +49,24 @@ public class WebSocketFacade extends Endpoint {
     }
 
     public void connectWSF(String authToken, int gameID, String team) throws ResponseException {
-        try {
-            var action = new ConnectCommand(authToken, gameID, team);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action, ConnectCommand.class));
-        } catch (IOException ex) {
-            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
-        }
+        var action = new ConnectCommand(authToken, gameID, team);
+        sendCommand(action);
     }
 
     public void leaveGameWSF(String authToken, int gameID) throws ResponseException {
-        try {
-            var action = new LeaveGameCommand(authToken, gameID);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action, LeaveGameCommand.class));
-        } catch (IOException ex) {
-            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
-        }
+        var action = new LeaveGameCommand(authToken, gameID);
+        sendCommand(action);
     }
 
     public void resignWSF(String authToken, int gameID) throws ResponseException {
-        try {
-            var action = new ResignCommand(authToken, gameID);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action, ResignCommand.class));
-        } catch (IOException ex) {
-            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
-        }
+        var action = new ResignCommand(authToken, gameID);
+        sendCommand(action);
+
     }
 
     public void makeMoveWSF(String authToken, int gameID, ChessMove move) throws ResponseException {
-        try {
-            var action = new MakeMoveCommand(authToken, gameID, move);
-            this.session.getBasicRemote().sendText(new Gson().toJson(action, MakeMoveCommand.class));
-        } catch (IOException ex) {
-            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
-        }
+        var action = new MakeMoveCommand(authToken, gameID, move);
+        sendCommand(action);
     }
 
     private void sendCommand(UserGameCommand command) throws ResponseException {
