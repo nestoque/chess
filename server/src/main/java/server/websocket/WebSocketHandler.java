@@ -1,6 +1,8 @@
 package server.websocket;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.*;
@@ -59,7 +61,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 }
                 case RESIGN -> {
                     ResignCommand cmd = gson.fromJson(wsMessageContext.message(), ResignCommand.class);
-                    resign(session, username, (ResignCommand) command);
+                    resign(session, username, cmd);
                 }
             }
         } catch (UnauthorizedException ex) {
@@ -117,6 +119,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             GameData gameData = gameDAO.getGame(cmd.getGameID());
             ChessGame.TeamColor checkCheck =
                     (gameData.whiteUsername().equals(username)) ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+            String oppositeUsername = (checkCheck.equals(ChessGame.TeamColor.BLACK) ? gameData.blackUsername() : gameData.whiteUsername());
             if (gameData.game().isEndGame()) {
                 var notification = new ErrorMessage("Unable to move: Game already over");
                 sendMessage(session, notification);
@@ -134,20 +137,26 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             var notifyLoadGame = new LoadGameMessage(gameData);
             connections.broadcastAllInGame(cmd.getGameID(), notifyLoadGame);
             //Server sends a Notification message to all other clients in that game informing them what move was made.
-            var message = String.format("%s moved %s", username, cmd.getMove().toString());
+            var message = String.format("%s moved %s", username, reverseTranslateMove(cmd.getMove()));
             var notification = new NotificationMessage(message);
             connections.broadcast(cmd.getGameID(), session, notification);
             //If the move results in check, checkmate or stalemate the server sends a Notification message to all clients.
             if (gameData.game().isInCheckmate(checkCheck)) {
-                var checkMessage = String.format("%s checkmated %s", username, cmd.getMove().toString());
+                var checkMessage = String.format("%s checkmated %s", username, oppositeUsername); //add other username
                 var checkNotification = new NotificationMessage(checkMessage);
                 connections.broadcastAllInGame(cmd.getGameID(), checkNotification);
-                //mark game as done
+                gameData.game().setEndGame();
+                gameDAO.updateGame(gameData);
             } else if (gameData.game().isInStalemate(checkCheck)) {
-                var checkMessage = String.format("%s is in stalemate", username, cmd.getMove().toString());
+                var checkMessage = String.format("%s is in stalemate: game ends in a draw", oppositeUsername);
                 var checkNotification = new NotificationMessage(checkMessage);
                 connections.broadcastAllInGame(cmd.getGameID(), checkNotification);
-                //mark game as done
+                gameData.game().setEndGame();
+                gameDAO.updateGame(gameData);
+            } else if (gameData.game().isInCheck(checkCheck)) {
+                var checkMessage = String.format("%s is in check", oppositeUsername);
+                var checkNotification = new NotificationMessage(checkMessage);
+                connections.broadcastAllInGame(cmd.getGameID(), checkNotification);
             }
 
         } catch (InvalidMoveException ex) {
@@ -157,6 +166,13 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
 
+    private String reverseTranslateMove(ChessMove move) {
+        ChessPosition startPos = move.getStartPosition();
+        ChessPosition endPos = move.getEndPosition();
+        return (char) (startPos.getColumn() - 1 + (int) 'a') + Integer.toString(startPos.getRow()) + " " +
+                (char) (endPos.getColumn() - 1 + (int) 'a') + Integer.toString(endPos.getRow());
+    }
+
     //leave
     private void leaveGame(Session session, String username, LeaveGameCommand cmd) throws IOException {
         //If a player is leaving, then the game is updated to remove the root client. Game is updated in the database.
@@ -164,10 +180,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         //This applies to both players and observers.
         var message = String.format("%s left the game", username);
         GameData gameData = gameDAO.getGame(cmd.getGameID());
-        if (gameData.whiteUsername().equals(username)) {
+        if (gameData.whiteUsername() != null && gameData.whiteUsername().equals(username)) {
             gameData = gameData.setWhiteUsername(null);
             gameDAO.updateGame(gameData);
-        } else if (gameData.blackUsername().equals(username)) {
+        } else if (gameData.blackUsername() != null && gameData.blackUsername().equals(username)) {
             gameData = gameData.setBlackUsername(null);
             gameDAO.updateGame(gameData);
         }
@@ -182,6 +198,17 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         //Server sends a Notification message to all clients in that game informing them that the root client resigned.
         // This applies to both players and observers.
         GameData gameData = gameDAO.getGame(cmd.getGameID());
+        if (gameData.game().isEndGame()) {
+            var notification = new ErrorMessage("Unable to resign: Game already over");
+            sendMessage(session, notification);
+            return;
+        }
+        if ((gameData.blackUsername() == null || !gameData.blackUsername().equals(username)) &&
+                (gameData.whiteUsername() == null || !gameData.whiteUsername().equals(username))) {
+            var notification = new ErrorMessage("Unable to resign as observer");
+            sendMessage(session, notification);
+            return;
+        }
         gameData.game().setEndGame();
         gameDAO.updateGame(gameData);
         var message = String.format("%s resigned", username);

@@ -1,6 +1,7 @@
 package ui;
 
 import chess.*;
+import client.Repl;
 import exception.ResponseException;
 import object.GameData;
 import serverfacade.ServerFacade;
@@ -14,6 +15,7 @@ import websocket.messages.ServerMessage;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 import static ui.EscapeSequences.SET_TEXT_COLOR_GREEN;
@@ -28,13 +30,16 @@ public class GameClient implements NotificationHandler {
     private final PostLoginClient postClient;
     private final String serverUrl;
     private GameData gameState;
+    private final Repl mainREPL;
 
-    public GameClient(ServerFacade mainServer, PreLoginClient preClient, PostLoginClient postClient, String newServerUrl)
+    public GameClient(ServerFacade mainServer, PreLoginClient preClient, PostLoginClient postClient, String newServerUrl,
+                      Repl myREPL)
             throws ResponseException {
         server = mainServer;
         this.preClient = preClient;
         this.postClient = postClient;
         serverUrl = newServerUrl;
+        mainREPL = myREPL;
     }
 
 
@@ -65,13 +70,18 @@ public class GameClient implements NotificationHandler {
                 case "resign" -> resign();
                 case "hl", "highlight" -> highlight(params);
                 case "h", "help" -> help();
-                case "newtab" -> new ReplResult("", ReplResult.State.GAME);
+                case "newtab" -> newtab();
                 case "q", "quit" -> new ReplResult("quit\n", ReplResult.State.POSTLOGIN);
                 default -> help();
             };
         } catch (Exception ex) {
             return new ReplResult(ex.getMessage(), ReplResult.State.GAME);
         }
+    }
+
+    private ReplResult newtab() throws InterruptedException {
+        Thread.sleep(500);
+        return help();
     }
 
     private ReplResult highlight(String... params) {
@@ -88,15 +98,30 @@ public class GameClient implements NotificationHandler {
         }
     }
 
-    private ReplResult resign() throws ResponseException {
-        ws.resignWSF(authToken, joinedGame);
-        return new ReplResult("You resigned", ReplResult.State.GAME);
+    private ReplResult resign() throws ResponseException, InterruptedException {
+        if (joinedColor == null) {
+            return new ReplResult("Unable to resign as observer", ReplResult.State.GAME);
+        }
+        System.out.println("""
+                are you sure you want to resign? this means you will forfeit the match
+                y - confirm | n - cancel""");
+        mainREPL.printPrompt(ReplResult.State.GAME);
+        String[] tokens = mainREPL.getInput().toLowerCase().split(" ");
+        if (tokens[0].equals("y")) {
+            ws.resignWSF(authToken, joinedGame);
+            Thread.sleep(500);
+            return new ReplResult("You resigned", ReplResult.State.GAME);
+        }
+        return new ReplResult("You did not resign", ReplResult.State.GAME);
     }
 
-    private ReplResult move(String... params) throws ResponseException {
+    private ReplResult move(String... params) throws ResponseException, InterruptedException {
+        if (gameState.game().isEndGame()) {
+            return new ReplResult(SET_BG_COLOR_RED + "Unable to move: Game already over", ReplResult.State.GAME);
+        }
         if (joinedColor == null || joinedColor.equals("BLACK") && gameState.game().getTeamTurn() != ChessGame.TeamColor.BLACK ||
                 joinedColor.equals("WHITE") && gameState.game().getTeamTurn() != ChessGame.TeamColor.WHITE) {
-            return new ReplResult(String.format("%s's Turn",
+            return new ReplResult(String.format(SET_BG_COLOR_RED + "%s's Turn",
                     gameState.game().getTeamTurn().equals(ChessGame.TeamColor.BLACK) ? "black" : "white"),
                     ReplResult.State.GAME);
         }
@@ -125,7 +150,7 @@ public class GameClient implements NotificationHandler {
                     press q to leave game
                     """, ReplResult.State.GAME);
         }
-
+        Thread.sleep(500);
         return new ReplResult(String.format("You moved %s to %s", params[0], params[1]),
                 ReplResult.State.GAME);
     }
@@ -140,6 +165,7 @@ public class GameClient implements NotificationHandler {
 
     private ReplResult leave() throws ResponseException {
         ws.leaveGameWSF(authToken, joinedGame);
+        ws = null;
         return new ReplResult("You left\n", ReplResult.State.POSTLOGIN);
     }
 
@@ -150,9 +176,12 @@ public class GameClient implements NotificationHandler {
 
     public ReplResult help() {
         return new ReplResult("""
-                Expected m <StartSquare> <EndSquare> <Optional: Promotion Piece> 
-                    ex: m a2 a4
-                press q to leave game
+                h - Displays this message
+                r - redraws the chess board
+                l - leave the game
+                hl <square> - highlight legal moves for any piece
+                m <square> <square> - move one of your chess pieces on your turn
+                resign - forfeit the game
                 """, ReplResult.State.GAME);
     }
 
@@ -173,19 +202,17 @@ public class GameClient implements NotificationHandler {
 
     private void displayNotification(String message) {
         System.out.println("\n" + SET_TEXT_COLOR_MAGENTA + message);
-        System.out.print("\n" + RESET_TEXT_COLOR + ">>> " + SET_TEXT_COLOR_GREEN);
+        mainREPL.printPrompt(ReplResult.State.GAME);
     }
 
     private void displayError(String errorMsg) {
         System.out.println("\n" + SET_TEXT_COLOR_RED + errorMsg);
-        System.out.print("\n" + RESET_TEXT_COLOR + ">>> " + SET_TEXT_COLOR_GREEN);
+        mainREPL.printPrompt(ReplResult.State.GAME);
     }
 
     private void loadGame(GameData game) {
         gameState = game;
         System.out.print("\n" + redraw().message());
-        System.out.print(help().message());
-        System.out.print("\n" + RESET_TEXT_COLOR + ">>> " + SET_TEXT_COLOR_GREEN);
     }
 }
 
